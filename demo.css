@@ -1,0 +1,40 @@
+@font-face {
+  font-family: "SuttonSignWritingOneD";
+  src: 
+    local('SuttonSignWritingOneD'),
+    url('https://unpkg.com/@sutton-signwriting/font-ttf@1.0.0/font/SuttonSignWritingOneD.ttf') format('truetype');
+}
+
+git html {
+ overflow: auto;
+}
+
+html, body, iframe {
+ margin: 0px; 
+ padding: 0px; 
+ height: 100%; 
+ border: none;
+}
+iframe {
+ display: block; 
+ width: 100%; 
+ height: 100%; 
+ border: none; 
+ overflow-y: auto; 
+ overflow-x: hidden;
+}
+
+.swu {
+  font-family: SuttonSignWritingOneD
+}
+
+.boxed {
+  float: left;
+  padding: 5px;
+  margin: 5px;
+  border: 1px solid black;
+  background: lightgray;
+}
+.boxed span {
+  padding: 2px;
+}
