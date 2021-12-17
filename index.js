@@ -60,7 +60,6 @@ function setS(obj){
   Object.keys(obj).map( key => {
     val = obj[key];
     if (S[key] == val) return;
-    console.log("SET " + key + " " + val);
     switch (key) {
       case 'ui':
         if(t && val==S['ui']) return;
@@ -149,8 +148,6 @@ function hash(){
   }).filter(item => item !== undefined).join("&");
 }
 function hashSet(){
-  console.log("hashSet")
-  console.log(hash());
 //  history.replaceState(null, null, document.location.pathname + '#' + hash);
   history.pushState(null, null, document.location.pathname + '#' + hash());
 //  window.location.hash = hash;
@@ -158,7 +155,6 @@ function hashSet(){
 
 window.onhashchange = hashChange;
 function hashChange(event){
-  console.log("hashChange")
   var parts;
   var hashed = {}
   var iloc = window.location.href.indexOf('?');
@@ -200,19 +196,31 @@ signmaker.vm = {
   midWidth: 125,
   midHeight: 125,
   new: function(){
-    console.log("New")
     signmaker.vm.list=new spatials.List();
     signmaker.vm.sort=[];
     signmaker.vm.history = ['{"list":[],"sort":[]'];
     signmaker.vm.cursor = 0;
   },
-  post: function(){
+  save: function(){
     if (isiFrame){
-      parent.postMessage({'swu': signmaker.vm.swunorm(), 'fsw': signmaker.vm.fswnorm()})
+      parent.postMessage({'signmaker': 'save', 'swu': signmaker.vm.swunorm(), 'fsw': signmaker.vm.fswnorm()})
     } else {
       hashSet()
+      if (navigator.share) {
+        navigator.share({'url': document.location.href})
+      } else {
+        alert(window.location.href)
+      }
+      //maybe share or bookmark?
     }
-    
+  },
+  cancel: function(){
+    if (isiFrame){
+      parent.postMessage({'signmaker': 'cancel'})
+    } else {
+      hashSet()
+      signmaker.vm.clear();
+    }
   },
   fswlive: function(){
     var fsw = 'M500x500';
@@ -273,12 +281,9 @@ signmaker.vm = {
     return fsw;
   },
   swu: function(swu,silent){
-    console.log("YELP")
     if (swu!='undefined') {
       signmaker.vm.fsw(ssw.swu2fsw(swu),silent);
-      console.log("1")
     } else {
-      console.log("2")
       fsw = 'M500x500';
       if (signmaker.vm.sort.length) fsw = "A" + signmaker.vm.sort.join('') + fsw;
       for (var i=0; i < signmaker.vm.list.length; i++) {
@@ -1014,10 +1019,12 @@ function palDragMove( draggie ){
 palette.view = function(ctrl){
   var tooltip = palette.vm.base?'':palette.vm.group?'base_':'group_';
   return [
-    m('div.btn.clickable',{onclick: signmaker.vm.post},tt("save")),
-    m("div.btn.clickable",palette.top(),tt("top")),
+    m('div.btn.clickable.save',{onclick: signmaker.vm.save},tt("save")),
+    palette.vm.mirror?'':m("div.btn.clickable",palette.top(),tt("top")),
     m("div.btn.clickable",palette.previous(),tt("previous")),
     palette.vm.mirror?m("div.btn",palette.mirror(),tt("mirror")):'',
+    m('div.btn.clickable.cancel',{onclick: signmaker.vm.cancel},tt("cancel")),
+    
     palette.vm.grid.map(function(row){
       return m("div.row",{"class":palette.vm.dialing?"smaller":''},row.map(function(key){
         return m("div"
@@ -1084,7 +1091,6 @@ function initApp(){
 
 var cssCheck;
 window.onload = function () {
-  console.log("loadSignmaker")
   if (S['swu']) {
     signmaker.vm.swu(S['swu'])
   } else if (S['fsw']) {

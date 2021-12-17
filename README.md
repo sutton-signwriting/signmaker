@@ -7,7 +7,7 @@
 
 <img alt="SignMaker Artwork" src="./signmaker.png">
 
-@sutton-signwriting/signmaker is an online editor that can be [accessed directly](https://sutton-signwriting.github.io/signmaker/), [embedded in an iFrame](https://sutton-signwriting.github.io/signmaker/demo.html), and [downloaded](https://github.com/sutton-signwriting/signmaker/archive/gh-pages.zip).  It uses both Formal SignWriting in ASCII (FSW) and SignWriting in Unicode (SWU) character sets, along with the associated style string.  See [draft-slevinski-formal-signwriting](https://tools.ietf.org/id/draft-slevinski-formal-signwriting-08.html) for detailed specification.
+@sutton-signwriting/signmaker is an online editor that can be [accessed directly](https://sutton-signwriting.github.io/signmaker/), [embedded in an iFrame](https://sutton-signwriting.github.io/signmaker/demo.html), and [downloaded](https://github.com/sutton-signwriting/signmaker/archive/refs/heads/main.zip).  It uses both Formal SignWriting in ASCII (FSW) and SignWriting in Unicode (SWU) character sets, along with the associated style string.  See [draft-slevinski-formal-signwriting](https://tools.ietf.org/id/draft-slevinski-formal-signwriting-08.html) for detailed specification.
 
 > Author: https://SteveSlevinski.me  
 > Channel: https://www.youtube.com/channel/UCXu4AXlG0rXFtk_5SzumDow  
@@ -20,7 +20,7 @@
 - Public Editor: https://sutton-signwriting.github.io/signmaker/
 - Public Demo: https://sutton-signwriting.github.io/signmaker/demo.html
 - Source: https://github.com/sutton-signwriting/signmaker
-- Download: https://github.com/sutton-signwriting/signmaker/archive/gh-pages.zip
+- Download: https://github.com/sutton-signwriting/signmaker/archive/refs/heads/main.zip
 - Issue Tracker: https://github.com/sutton-signwriting/signmaker/issues
 - Online Discussion: https://gitter.im/sutton-signwriting/community
  

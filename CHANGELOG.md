@@ -5,12 +5,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### added
+- cancel button for page view and iframe view
+- save for page view using navigator.share
+
+### fixed
+- demo page for file system access by explicitly referencing index.html
+ 
+
 ### To Do
-- fix and integrate style string
-- update mithril for index.js from v0.2 to v2.0
-- update signmaker to use sutton-signwriting packages of core and font-ttf
-- update user interface for smaller screens and other display options
-- documentation and usage guide
+- better help and documentation
+- rewire screen communication
+- upgrade interface with responsive HTML and CSS
+- integrate the styling string
+- upgrade mithril from v0.2 to v2.0
+- upgrade config data from window object to json
+- upgrade to sutton-signwriting packages
+- test cross-platform
 - fix undo and redo with history and back button
 
 ## [1.0.0] - 2021-12-16

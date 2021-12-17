@@ -15,12 +15,12 @@ var M_in = [];
 var M_out = [];
 
 var T = {
-  'home': './',
+  'home': './index.html',
   'style': 'height:200px;width:400px;'
 }
 var OT = {
   'home': {
-    './': 'dot',
+    './index.html': 'dot',
     'http://localhost:5000/': 'local',
     'https://sutton-signwriting.github.io/signmaker/': 'public'
   },
@@ -184,8 +184,7 @@ var Demo = {
           m(ButtonM,{state: key,value:'',text:'none'}),
           Object.keys(OS[key]).map(name => {
             return m(ButtonM,{state:key,value:name,text:OS[key][name]})
-          }),
-          m('span.swu'," (" + (S[key]?S[key]:'') + ") ")
+          })
         ])
       }),
       m('div',{style:"clear:both;height:1%"}),
