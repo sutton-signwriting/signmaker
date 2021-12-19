@@ -21,7 +21,7 @@ var T = {
 var OT = {
   'home': {
     './index.html': 'dot',
-    'http://localhost:5000/': 'local',
+    [window.location.href.split("#")[0].replace(/\/demo(\.html)?$/,"/index.html")]: 'local',
     'https://sutton-signwriting.github.io/signmaker/': 'public'
   },
   'style': {
@@ -89,6 +89,21 @@ function hash(){
     return S[key]?key+"="+S[key]:undefined
   }).filter(item => (item !== undefined)).join("&")
 }
+window.onhashchange = hashChange;
+function hashChange(event){
+  var parts;
+  var hashed = {}
+  var iloc = window.location.href.indexOf('?');
+  if (iloc>-1) {
+    var hashes = decodeURI(window.location.href.slice(iloc + 1)).split('&');
+    for(var i = 0; i < hashes.length; i++) {
+      parts = hashes[i].split('=');
+      if (parts[0]) hashed[parts[0]] = parts[1];
+    }
+  }
+  S = hashed;
+}
+hashChange();
 
 var root = document.body
 var ButtonT = {

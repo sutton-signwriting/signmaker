@@ -205,22 +205,26 @@ signmaker.vm = {
     if (isiFrame){
       parent.postMessage({'signmaker': 'save', 'swu': signmaker.vm.swunorm(), 'fsw': signmaker.vm.fswnorm()})
     } else {
-      hashSet()
-      if (navigator.share) {
-        navigator.share({'url': document.location.href})
-      } else {
-        alert(window.location.href)
-      }
-      //maybe share or bookmark?
+      hashSet();
+      console.log(window.location.href)
     }
+  },
+  share: function(){
+    if (navigator.share) {
+      navigator.share({'url': document.location.href})
+    } else {
+      console.log(window.location.href);
+    }
+  },
+  demo: function(){
+    window.location = "./demo.html#?" + hash();
   },
   cancel: function(){
     if (isiFrame){
       parent.postMessage({'signmaker': 'cancel'})
-    } else {
-      hashSet()
-      signmaker.vm.clear();
     }
+    signmaker.vm.clear();
+    palette.vm.action = false;
   },
   fswlive: function(){
     var fsw = 'M500x500';
@@ -850,6 +854,7 @@ palette.vm = {};
 
 palette.vm.init = function(){
   this.source = palette.structure();
+  this.action = false;
 }
 
 palette.vm.select = function(group,base,lower){
@@ -1019,12 +1024,17 @@ function palDragMove( draggie ){
 palette.view = function(ctrl){
   var tooltip = palette.vm.base?'':palette.vm.group?'base_':'group_';
   return [
-    m('div.btn.clickable.save',{onclick: signmaker.vm.save},tt("save")),
-    palette.vm.mirror?'':m("div.btn.clickable",palette.top(),tt("top")),
-    m("div.btn.clickable",palette.previous(),tt("previous")),
-    palette.vm.mirror?m("div.btn",palette.mirror(),tt("mirror")):'',
-    m('div.btn.clickable.cancel',{onclick: signmaker.vm.cancel},tt("cancel")),
-    
+    palette.vm.action?[
+      m('div.btn.clickable.save',{onclick: signmaker.vm.save},tt("save")),
+      m('div.btn.clickable.share',{onclick: signmaker.vm.share},tt("share")),
+      m('div.btn.clickable.demo',{onclick: signmaker.vm.demo},tt("demo")),
+      m('div.btn.clickable.cancel',{onclick: signmaker.vm.cancel},tt("cancel")),
+    ]:[
+      m('div.btn.clickable.save',{onclick: () => palette.vm.action = !palette.vm.action},tt("action")),
+      m("div.btn.clickable",palette.top(),tt("top")),
+      m("div.btn.clickable",palette.previous(),tt("previous")),
+      palette.vm.mirror?m("div.btn",palette.mirror(),tt("mirror")):''
+    ],
     palette.vm.grid.map(function(row){
       return m("div.row",{"class":palette.vm.dialing?"smaller":''},row.map(function(key){
         return m("div"
@@ -1057,6 +1067,42 @@ addEventListener("keydown", function(event){
   }
 });
 
+function initApp(){
+  m.mount(document.getElementById("palette"), palette);
+  m.mount(document.getElementById("signmaker"), signmaker);
+}
+
+var cssCheck;
+window.onload = function () {
+  if (S['swu']) {
+    signmaker.vm.swu(S['swu'])
+  } else if (S['fsw']) {
+    signmaker.vm.fsw(S['fsw'])
+  } 
+  var cnt = 0;
+  if (!!ssw.size("S10000")){
+    initApp();
+  } else {
+    classie.addClass(document.body,"waiting");
+    var page = document.body.innerHTML;
+    cssCheck = setInterval(function(){
+      if (ssw.size("S10000")){
+        classie.removeClass(document.body,"waiting");
+        document.body.innerHTML = page;
+        clearInterval(cssCheck);
+        initApp();
+        //secondary call for Android default browser
+        //setTimeout(function(){ initApp(); }, 100);
+      } else {
+        document.getElementById('dots').innerHTML=Array(1+parseInt(((cnt++)%40)/10)).join('.');      
+      }
+    },100);
+    document.body.innerHTML = '<h2>' + t('loadFont') + ' <span id="dots"></span>' + '</h2>';
+  }
+
+  
+}
+
 checkKeyboard = function (event,name){
   if (event.target==document.body){
     var code = event.charCode || event.keyCode;
@@ -1083,66 +1129,31 @@ checkKeyboard = function (event,name){
     return false;
   }
 }
-
-function initApp(){
-  m.mount(document.getElementById("palette"), palette);
-  m.mount(document.getElementById("signmaker"), signmaker);
-}
-
-var cssCheck;
-window.onload = function () {
-  if (S['swu']) {
-    signmaker.vm.swu(S['swu'])
-  } else if (S['fsw']) {
-    signmaker.vm.fsw(S['fsw'])
-  } 
-  var cnt = 0;
-  if (!ssw.size("S10000")){
-    classie.addClass(document.body,"waiting");
-    var page = document.body.innerHTML;
-    cssCheck = setInterval(function(){
-      if (ssw.size("S10000")){
-        classie.removeClass(document.body,"waiting");
-        document.body.innerHTML = page;
-        clearInterval(cssCheck);
-        initApp();
-        //secondary call for Android default browser
-        //setTimeout(function(){ initApp(); }, 100);
-      } else {
-        document.getElementById('dots').innerHTML=Array(1+parseInt(((cnt++)%40)/10)).join('.');      
-      }
-    },100);
-      document.body.innerHTML = '<h2>' + tt('fontNotInstalled') + '</h2>';
-    } else {
-        initApp();
-    }
-
-  addEventListener("keyup", function(event) {
-    var x = event.charCode || event.keyCode;
-    if (checkKeyboard(event,"left10")){ signmaker.vm.move(-10,0);} else
-    if (checkKeyboard(event,"up10")){ signmaker.vm.move(0,-10);} else
-    if (checkKeyboard(event,"right10")){ signmaker.vm.move(10,0);} else
-    if (checkKeyboard(event,"down10")){ signmaker.vm.move(0,10);} else
-    if (checkKeyboard(event,"left")){ signmaker.vm.move(-1,0);} else
-    if (checkKeyboard(event,"up")){ signmaker.vm.move(0,-1);} else
-    if (checkKeyboard(event,"right")){ signmaker.vm.move(1,0);} else
-    if (checkKeyboard(event,"down")){ signmaker.vm.move(0,1);} else
-    if (checkKeyboard(event,"selectBack")){ signmaker.vm.select(-1);} else 
-    if (checkKeyboard(event,"selectNext")){ signmaker.vm.select(1);} else 
-    if (checkKeyboard(event,"escape")){ if (S['tab'] == 'more') {setS({'tab':''});} else {setS({'tab':'more'})} }else 
-    if (checkKeyboard(event,"delete")){ signmaker.vm.delete();} else 
-    if (checkKeyboard(event,"redo")){ signmaker.vm.redo();} else 
-    if (checkKeyboard(event,"undo")){ signmaker.vm.undo();} else 
-    if (checkKeyboard(event,"rotateBack")){ signmaker.vm.rotate(-1);} else 
-    if (checkKeyboard(event,"rotateNext")){ signmaker.vm.rotate(1);} else 
-    if (checkKeyboard(event,"variationBack")){ signmaker.vm.variation(-1);} else 
-    if (checkKeyboard(event,"variationNext")){ signmaker.vm.variation(1);} else 
-    if (checkKeyboard(event,"mirror")){ signmaker.vm.mirror();} else 
-    if (checkKeyboard(event,"fillBack")){ signmaker.vm.fill(-1);} else 
-    if (checkKeyboard(event,"fillNext")){ signmaker.vm.fill(1);} else 
-    if (checkKeyboard(event,"recenter")){ signmaker.vm.center();}
-     
-    if (event.preventDefault) event.preventDefault();
-    return false;
-  });
-}
+addEventListener("keyup", function(event) {
+  var x = event.charCode || event.keyCode;
+  if (checkKeyboard(event,"left10")){ signmaker.vm.move(-10,0);} else
+  if (checkKeyboard(event,"up10")){ signmaker.vm.move(0,-10);} else
+  if (checkKeyboard(event,"right10")){ signmaker.vm.move(10,0);} else
+  if (checkKeyboard(event,"down10")){ signmaker.vm.move(0,10);} else
+  if (checkKeyboard(event,"left")){ signmaker.vm.move(-1,0);} else
+  if (checkKeyboard(event,"up")){ signmaker.vm.move(0,-1);} else
+  if (checkKeyboard(event,"right")){ signmaker.vm.move(1,0);} else
+  if (checkKeyboard(event,"down")){ signmaker.vm.move(0,1);} else
+  if (checkKeyboard(event,"selectBack")){ signmaker.vm.select(-1);} else 
+  if (checkKeyboard(event,"selectNext")){ signmaker.vm.select(1);} else 
+  if (checkKeyboard(event,"escape")){ if (S['tab'] == 'more') {setS({'tab':''});} else {setS({'tab':'more'})} }else 
+  if (checkKeyboard(event,"delete")){ signmaker.vm.delete();} else 
+  if (checkKeyboard(event,"redo")){ signmaker.vm.redo();} else 
+  if (checkKeyboard(event,"undo")){ signmaker.vm.undo();} else 
+  if (checkKeyboard(event,"rotateBack")){ signmaker.vm.rotate(-1);} else 
+  if (checkKeyboard(event,"rotateNext")){ signmaker.vm.rotate(1);} else 
+  if (checkKeyboard(event,"variationBack")){ signmaker.vm.variation(-1);} else 
+  if (checkKeyboard(event,"variationNext")){ signmaker.vm.variation(1);} else 
+  if (checkKeyboard(event,"mirror")){ signmaker.vm.mirror();} else 
+  if (checkKeyboard(event,"fillBack")){ signmaker.vm.fill(-1);} else 
+  if (checkKeyboard(event,"fillNext")){ signmaker.vm.fill(1);} else 
+  if (checkKeyboard(event,"recenter")){ signmaker.vm.center();}
+   
+  if (event.preventDefault) event.preventDefault();
+  return false;
+});

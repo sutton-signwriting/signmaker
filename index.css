@@ -24,6 +24,10 @@ svg {
   -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
 }
 
+body {
+  touch-action: pan-y;
+}
+
 body, body:before, body:after {
   margin:0;
 }

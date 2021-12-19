@@ -8,9 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### added
 - cancel button for page view and iframe view
 - save for page view using navigator.share
+- demo page loads state
+- action menu for save, share, and demo
 
 ### fixed
 - demo page for file system access by explicitly referencing index.html
+- double-touch to zoom on ipad
+- local home value for demo page use in a link and iframe
  
 
 ### To Do
@@ -23,6 +27,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - upgrade to sutton-signwriting packages
 - test cross-platform
 - fix undo and redo with history and back button
+- make save interact with a SignWriting dictionary API
+- integrate search and search results
+- reorganize messages for user interface, eliminate and complete
+- fix and expand keyboarding options
+- add keyboard command to append the selected symbol to end of the sequence
+
 
 ## [1.0.0] - 2021-12-16
 ### Added
