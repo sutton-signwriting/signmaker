@@ -35,8 +35,9 @@ var SS = ['server'];
 //S values are saved by value
 // values are hashed to demo a link and iframe
 var S = {
-  'iframesize': undefined,
+  'server': undefined,
   'view': undefined,
+  'iframesize': undefined,
   'ui': undefined,
   'alphabet': undefined,
   'fsw': undefined,
@@ -51,7 +52,7 @@ var S = {
 var SD = {
   'server': {
     'dot': './',
-    'local': [window.location.href.split("#")[0].replace(/\/demo(\.html)?$/,"/")],
+    'local': window.location.origin + window.location.pathname.replace(/\/demo(\.html)?$/,"/"),
     'public': 'https://sutton-signwriting.github.io/signmaker/'
 //    'backup': ''
   },
@@ -133,7 +134,7 @@ window.onhashchange = hashChange;
 function hashChange(event){
   var parts;
   var hashed = {}
-  var iloc = window.location.href.indexOf('?');
+  var iloc = window.location.href.indexOf('#?');
   if (iloc>-1) {
     var hashes = decodeURI(window.location.href.slice(iloc + 1)).split('&');
     for(var i = 0; i < hashes.length; i++) {
@@ -144,8 +145,7 @@ function hashChange(event){
   if (hashed['server'] === undefined) { hashed['server'] = 'local';}
   if (hashed['iframesize'] === undefined) { hashed['iframesize'] = '400x200';}
   if (hashed['view'] === undefined) { hashed['view'] = 'index.html';}
-  S = hashed;
-  //T = hashed
+  Object.keys(S).map(key => S[key] = hashed[key])
 }
 hashChange();
 

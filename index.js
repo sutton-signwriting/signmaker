@@ -157,7 +157,7 @@ window.onhashchange = hashChange;
 function hashChange(event){
   var parts;
   var hashed = {}
-  var iloc = window.location.href.indexOf('?');
+  var iloc = window.location.href.indexOf('#?');
   if (iloc>-1) {
     var hashes = decodeURI(window.location.href.slice(iloc + 1)).split('&');
     for(var i = 0; i < hashes.length; i++) {
@@ -167,6 +167,11 @@ function hashChange(event){
   }
   
   hashed = {...D, ...hashed}
+  Object.keys(hashed).forEach(key => {
+    if (!(key in S)) {
+      hashed[key] = undefined;
+    }
+  })
   setS(hashed);
 } 
 
