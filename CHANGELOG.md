@@ -18,7 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - double-touch to zoom on ipad
 - server location of dot, local, or public for demo page use in a link and iframe
 - state variables, defaults, and values
- 
+- url hash to removed unwanted key/value pairs
+- readme link to escape iframe
 
 ### To Do
 - better help and documentation
@@ -43,6 +44,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - fonts page for testing if they are installed and more information
 - whoami page
 - head snapping on insertion of head symbol with overlay (complex faces) and overlapping
+- fix demo page for opening with readme
+- create font section with font installed or not information
 
 ## [1.0.0] - 2021-12-16
 ### Added

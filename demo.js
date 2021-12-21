@@ -145,6 +145,9 @@ function hashChange(event){
   if (hashed['server'] === undefined) { hashed['server'] = 'local';}
   if (hashed['iframesize'] === undefined) { hashed['iframesize'] = '400x200';}
   if (hashed['view'] === undefined) { hashed['view'] = 'index.html';}
+  if (hashed['view'] == "README.html" || hashed['view'] == "CHANGELOG.html") {
+    hashed['iframesize'] = '';
+  }
   Object.keys(S).map(key => S[key] = hashed[key])
 }
 hashChange();
