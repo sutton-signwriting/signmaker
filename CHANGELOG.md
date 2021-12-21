@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - state variables, defaults, and values
 - url hash to removed unwanted key/value pairs
 - readme link to escape iframe
+- messaging when access signmaker through file system
 
 ### To Do
 - better help and documentation

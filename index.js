@@ -208,7 +208,7 @@ signmaker.vm = {
   },
   save: function(){
     if (isiFrame){
-      parent.postMessage({'signmaker': 'save', 'swu': signmaker.vm.swunorm(), 'fsw': signmaker.vm.fswnorm()})
+      parent.postMessage({'signmaker': 'save', 'swu': signmaker.vm.swunorm(), 'fsw': signmaker.vm.fswnorm()},"*")
     } else {
       hashSet();
       console.log(window.location.href)
@@ -226,7 +226,7 @@ signmaker.vm = {
   },
   cancel: function(){
     if (isiFrame){
-      parent.postMessage({'signmaker': 'cancel'})
+      parent.postMessage({'signmaker': 'cancel'},"*")
     }
     signmaker.vm.clear();
     palette.vm.action = false;
