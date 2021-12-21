@@ -38,3 +38,7 @@ iframe {
 .boxed span {
   padding: 2px;
 }
+
+button.selected {
+  background: lightgray;
+}

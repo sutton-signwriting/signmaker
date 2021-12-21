@@ -148,9 +148,9 @@ function hash(){
   }).filter(item => item !== undefined).join("&");
 }
 function hashSet(){
-//  history.replaceState(null, null, document.location.pathname + '#' + hash);
+  //  history.replaceState(null, null, document.location.pathname + '#' + hash);
   history.pushState(null, null, document.location.pathname + '#' + hash());
-//  window.location.hash = hash;
+  //  window.location.hash = hash;
 }
 
 window.onhashchange = hashChange;

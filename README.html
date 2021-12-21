@@ -1,0 +1,56 @@
+<h1>@sutton-signwriting/signmaker</h1>
+<p><a href="https://gitter.im/sutton-signwriting/community?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge&amp;utm_content=badge"><img src="https://badges.gitter.im/Join%20Chat.svg" alt="Gitter"></a>
+<a href="https://www.npmjs.com/package/@sutton-signwriting/signmaker"><img src="https://img.shields.io/npm/v/@sutton-signwriting/signmaker" alt="version"></a>
+<a href="https://npm-stat.com/charts.html?package=@sutton-signwriting/signmaker&amp;from=2021-12-16"><img src="https://img.shields.io/npm/dm/@sutton-signwriting/signmaker" alt="npm downloads"></a></p>
+<hr>
+<img alt="SignMaker Artwork" src="./signmaker.png">
+<p>@sutton-signwriting/signmaker is an online editor that can be <a href="https://sutton-signwriting.github.io/signmaker/">accessed directly</a>, <a href="https://sutton-signwriting.github.io/signmaker/demo.html">embedded in an iFrame</a>, and <a href="https://github.com/sutton-signwriting/signmaker/archive/refs/heads/main.zip">downloaded</a>.  It uses both Formal SignWriting in ASCII (FSW) and SignWriting in Unicode (SWU) character sets, along with the associated style string.  See <a href="https://tools.ietf.org/id/draft-slevinski-formal-signwriting-08.html">draft-slevinski-formal-signwriting</a> for detailed specification.</p>
+<blockquote>
+<p>Author: https://SteveSlevinski.me<br>
+Channel: https://www.youtube.com/channel/UCXu4AXlG0rXFtk_5SzumDow<br>
+Support: https://www.patreon.com/signwriting</p>
+</blockquote>
+<hr>
+<h2>Useful links</h2>
+<ul>
+<li>Public Editor: https://sutton-signwriting.github.io/signmaker/</li>
+<li>Public Demo: https://sutton-signwriting.github.io/signmaker/demo.html</li>
+<li>Source: https://github.com/sutton-signwriting/signmaker</li>
+<li>Download: https://github.com/sutton-signwriting/signmaker/archive/refs/heads/main.zip</li>
+<li>Issue Tracker: https://github.com/sutton-signwriting/signmaker/issues</li>
+<li>Online Discussion: https://gitter.im/sutton-signwriting/community</li>
+</ul>
+<hr>
+<h2>URL Parameters</h2>
+<p>SignMaker supports eight keys for URL query parameters</p>
+<ul>
+<li>ui - language code for user interface</li>
+<li>alphabet - sign language code for symbol palette hierarchy</li>
+<li>fsw - the sign value in Formal SignWriting in ASCII (FSW)</li>
+<li>swu - the sign value in SignWriting in Unicode (SWU)</li>
+<li>styling - the style string for image creation</li>
+<li>grid - grid detail of 0,1,2</li>
+<li>skin - alternate displays such as &quot;inverse&quot; and &quot;colorful&quot;</li>
+<li>tab - the value for the tab to display</li>
+</ul>
+<p>Example: https://sutton-signwriting.github.io/signmaker/#?ui=ase&amp;fsw=AS10011S10019S2e704S2e748M525x535S2e748483x510S10011501x466S2e704510x500S10019476x475&amp;skin=colorful<br>
+Top Half of Demo: https://sutton-signwriting.github.io/signmaker/demo.html</p>
+<hr>
+<h2>iFrame Messaging</h2>
+<ol>
+<li>embed SignMaker in an iFrame</li>
+<li>send message to the iFrame using postMessage</li>
+<li>receive message from the iFrame with an event listener for message</li>
+</ol>
+<p>Bottom Half of Demo: https://sutton-signwriting.github.io/signmaker/demo.html#?fsw=AS10011S10019S2e704S2e748M525x535S2e748483x510S10011501x466S2e704510x500S10019476x475&amp;skin=colorful</p>
+<hr>
+<h2>License</h2>
+<p>MIT</p>
+<hr>
+<h2>SignWriting General Interest</h2>
+<ul>
+<li>SignWriting Website: https://signwriting.org/</li>
+<li>Wikipedia page: https://en.wikipedia.org/wiki/SignWriting</li>
+<li>Email Discussion: https://www.signwriting.org/forums/swlist/</li>
+<li>Facebook Group: https://www.facebook.com/groups/SuttonSignWriting/</li>
+</ul>

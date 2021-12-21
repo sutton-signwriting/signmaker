@@ -48,7 +48,7 @@ Top Half of Demo: https://sutton-signwriting.github.io/signmaker/demo.html
 2) send message to the iFrame using postMessage
 3) receive message from the iFrame with an event listener for message
 
-Bottom Half of Demo: https://sutton-signwriting.github.io/signmaker/demo.html
+Bottom Half of Demo: https://sutton-signwriting.github.io/signmaker/demo.html#?fsw=AS10011S10019S2e704S2e748M525x535S2e748483x510S10011501x466S2e704510x500S10019476x475&skin=colorful
 
 - - -
 
