@@ -157,9 +157,9 @@ window.onhashchange = hashChange;
 function hashChange(event){
   var parts;
   var hashed = {}
-  var iloc = window.location.href.indexOf('#?')+1;
+  var iloc = window.location.href.indexOf('#?');
   if (iloc>-1) {
-    var hashes = decodeURI(window.location.href.slice(iloc + 1)).split('&');
+    var hashes = decodeURI(window.location.href.slice(iloc + 2)).split('&');
     for(var i = 0; i < hashes.length; i++) {
       parts = hashes[i].split('=');
       if (parts[0]) hashed[parts[0]] = parts[1];
@@ -222,7 +222,7 @@ signmaker.vm = {
     }
   },
   demo: function(){
-    window.location = "./demo.html#?" + hash();
+    window.location = "./demo.html#" + hash();
   },
   cancel: function(){
     if (isiFrame){
