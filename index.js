@@ -1,5 +1,5 @@
 /**
-* Sutton SignWriting SignMaker 2022 v1.0.0
+* Sutton SignWriting SignMaker 2022
 * https://github.com/sutton-signwriting/signmaker
 * Copyright (c) 2007-2021, Steve Slevinski
 * SignMaker is released under the MIT License.
@@ -98,6 +98,10 @@ function setS(obj){
         S['fsw'] = val;
         signmaker && signmaker.vm.fsw(val);
         break;
+      case 'charsets':
+        S['charsets'] = val;
+        console.log("charset to hash?");
+        break;
       case 'swu':
         val = decodeURI(val)
         S['swu'] = val;
@@ -126,6 +130,7 @@ var S = { // state
   'ui': undefined,
   'alphabet': undefined,
   'fsw': undefined,
+  'charsets': undefined,
   'swu': undefined,
   'styling': undefined,
   'grid': undefined,
@@ -142,7 +147,7 @@ var D = { // defaults
 
 function hash(){
   S['fsw'] = signmaker.vm.fswnorm();
-  S['swu'] = signmaker.vm.swunorm();
+  if (S['charsets']) S['swu'] = signmaker.vm.swunorm();
   return "?" + Object.keys(S).map(function(key){
     return (S[key] && (D[key] != S[key]))?key+"="+S[key]:undefined
   }).filter(item => item !== undefined).join("&");
@@ -228,7 +233,7 @@ signmaker.vm = {
     if (isiFrame){
       parent.postMessage({'signmaker': 'cancel'},"*")
     }
-    signmaker.vm.clear();
+    //signmaker.vm.clear();
     palette.vm.action = false;
   },
   fswlive: function(){
@@ -1031,14 +1036,15 @@ palette.view = function(ctrl){
   return [
     palette.vm.action?[
       m('div.btn.clickable.save',{onclick: signmaker.vm.save},tt("save")),
-      m('div.btn.clickable.share',{onclick: signmaker.vm.share},tt("share")),
+      navigator.share?m('div.btn.clickable.share',{onclick: signmaker.vm.share},tt("share")):'',
       m('div.btn.clickable.demo',{onclick: signmaker.vm.demo},tt("demo")),
       m('div.btn.clickable.cancel',{onclick: signmaker.vm.cancel},tt("cancel")),
     ]:[
-      m('div.btn.clickable.save',{onclick: () => palette.vm.action = !palette.vm.action},tt("action")),
-      m("div.btn.clickable",palette.top(),tt("top")),
+      m('div.btn.clickable.save',{onclick: signmaker.vm.save},tt("save")),
+      palette.vm.mirror?'':m("div.btn.clickable",palette.top(),tt("top")),
       m("div.btn.clickable",palette.previous(),tt("previous")),
-      palette.vm.mirror?m("div.btn",palette.mirror(),tt("mirror")):''
+      palette.vm.mirror?m("div.btn",palette.mirror(),tt("mirror")):'',
+      m('div.btn.clickable.save',{onclick: () => palette.vm.action = !palette.vm.action},tt("...")),
     ],
     palette.vm.grid.map(function(row){
       return m("div.row",{"class":palette.vm.dialing?"smaller":''},row.map(function(key){
@@ -1107,7 +1113,7 @@ window.onload = function () {
 
   
 }
-
+// https://keycode.info
 checkKeyboard = function (event,name){
   if (event.target==document.body){
     var code = event.charCode || event.keyCode;

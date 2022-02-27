@@ -5,23 +5,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-### added
-- cancel button for page view and iframe view
-- demo page loads state
-- action menu for save, share, and demo
-- added iframesize
-- URL parameter button highlights
-- README and CHANGELOG html pages
-
-### fixed
-- demo page for file system access by explicitly referencing index.html
-- double-touch to zoom on ipad
-- server location of dot, local, or public for demo page use in a link and iframe
-- state variables, defaults, and values
-- url hash to removed unwanted key/value pairs
-- readme link to escape iframe
-- messaging when access signmaker through file system
-
 ### To Do
 - better help and documentation
 - rewire screen communication for fsw, swu, and style
@@ -42,11 +25,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - include links on demo page to GH and more
 - signbox view, png view, svg view,fsw string,swu string
 - charset to restrict links and communications
-- fonts page for testing if they are installed and more information
 - whoami page
 - head snapping on insertion of head symbol with overlay (complex faces) and overlapping
 - fix demo page for opening with readme
 - create font section with font installed or not information
+- create profile page
+- action > cancel shouldn't clear sign
+- styling string needs breaking change individual symbol size and offset
+- - after offset, add new max coordinate
+- - update sutton-signwriting/core for new styling string definition
+- - update draft-slevinski-formal-signwriting
+- add signmaker to sutton-signwriting/sgnw-components
+- add offset coordinate to S state and URLs
+
+## [1.1.0] - 2022-02-27
+### added
+- demo page loads state
+- more actions menu for share, demo, and cancel
+- added iframesize
+- URL parameter button highlights
+- README and CHANGELOG html pages
+
+### fixed
+- demo page for file system access by explicitly referencing index.html
+- double-touch to zoom on ipad
+- server location of dot, local, or public for demo page use in a link and iframe
+- state variables, defaults, and values
+- url hash to removed unwanted key/value pairs
+- readme link to escape iframe
+- messaging when access signmaker through file system
 
 ## [1.0.0] - 2021-12-16
 ### Added
@@ -57,5 +64,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - iFrame messaging
 - demo page
 
-[Unreleased]: https://github.com/sutton-signwriting/signmaker/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/sutton-signwriting/signmaker/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/sutton-signwriting/signmaker/releases/tag/v1.1.0
 [1.0.0]: https://github.com/sutton-signwriting/signmaker/releases/tag/v1.0.0
