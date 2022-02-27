@@ -7,7 +7,7 @@
 
 <img alt="SignMaker Artwork" src="./signmaker.png">
 
-@sutton-signwriting/signmaker is an online editor that can be <a href="https://www.sutton-signwriting.io/signmaker/" target="_parent">accessed directly</a>, <a href="https://www.sutton-signwriting.io/signmaker/demo.html" target="_parent">embedded in an iFrame</a>, and <a href="https://github.com/sutton-signwriting/signmaker/archive/refs/heads/main.zip" target="_parent">downloaded</a>.  It uses both Formal SignWriting in ASCII (FSW) and SignWriting in Unicode (SWU) character sets, along with the associated style string.  See <a href="https://tools.ietf.org/id/draft-slevinski-formal-signwriting-08.html" target="_parent">draft-slevinski-formal-signwriting</a> for detailed specification.
+@sutton-signwriting/signmaker is an online editor that can be <a href="https://www.sutton-signwriting.io/signmaker/" target="_parent">accessed directly</a>, <a href="https://www.sutton-signwriting.io/signmaker/demo.html" target="_parent">embedded in an iFrame</a>, and <a href="https://github.com/sutton-signwriting/signmaker/archive/refs/heads/main.zip" target="_parent">downloaded</a>.  It uses both Formal SignWriting in ASCII (FSW) and SignWriting in Unicode (SWU) character sets, along with the associated style string.  See <a href="https://tools.ietf.org/id/draft-slevinski-formal-signwriting-09.html" target="_parent">draft-slevinski-formal-signwriting</a> for detailed specification.
 
 ## v1.1.0
 
