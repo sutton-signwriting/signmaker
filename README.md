@@ -3,6 +3,8 @@
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/sutton-signwriting/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![version](https://img.shields.io/npm/v/@sutton-signwriting/signmaker)](https://www.npmjs.com/package/@sutton-signwriting/signmaker)
 [![npm downloads](https://img.shields.io/npm/dm/@sutton-signwriting/signmaker)](https://npm-stat.com/charts.html?package=@sutton-signwriting/signmaker&from=2021-12-16)
+[![Spec](https://img.shields.io/badge/spec-Formal%20SignWriting-blueviolet)](https://datatracker.ietf.org/doc/html/draft-slevinski-formal-signwriting)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17553763.svg)](https://doi.org/10.5281/zenodo.17553763)
 - - - 
 
 <img alt="SignMaker Artwork" src="./signmaker.png">
