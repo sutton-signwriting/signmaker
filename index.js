@@ -210,6 +210,7 @@ signmaker.vm = {
     signmaker.vm.sort=[];
     signmaker.vm.history = ['{"list":[],"sort":[]'];
     signmaker.vm.cursor = 0;
+    signmaker.vm.signbox='M'
   },
   save: function(){
     if (isiFrame){
@@ -237,16 +238,16 @@ signmaker.vm = {
     palette.vm.action = false;
   },
   fswlive: function(){
-    var fsw = 'M500x500';
+    var fsw = signmaker.vm.signbox + "500x500";
     if (signmaker.vm.sort.length) fsw = "A" + signmaker.vm.sort.join('') + fsw;
     if (signmaker.vm.list.length){
       for (var i=0; i < signmaker.vm.list.length; i++) {
         fsw += signmaker.vm.list[i].key() + signmaker.vm.list[i].x() + 'x' + signmaker.vm.list[i].y();
       }
       var bbox = ssw.bbox(ssw.max(fsw)).split(' ');
-      fsw = fsw.replace("M500x500","M" + bbox[1] + 'x' + bbox[3]);
+      fsw = fsw.replace(signmaker.vm.signbox + "500x500",signmaker.vm.signbox + bbox[1] + 'x' + bbox[3]);
     }
-    return fsw=="M500x500"?'':fsw;
+    return fsw==signmaker.vm.signbox + "500x500"?'':fsw;
   },
   swulive: function(){
     return ssw.fsw2swu(signmaker.vm.fswlive());
@@ -260,6 +261,10 @@ signmaker.vm = {
   fsw: function(fsw,silent){
     if (typeof(fsw)!='undefined') {
       fsw = ssw.sign(fsw);
+
+      var signbox = fsw.match(/[LMRB]/)
+      signmaker.vm.signbox = signbox ? signbox[0] : "M";
+
       var syms = fsw.match(/S[1-3][0-9a-f]{2}[0-5][0-9a-f][0-9]{3}x[0-9]{3}/g) || [];
       signmaker.vm.list = new spatials.List();
       for (var i=0; i < syms.length; i++) {
@@ -298,7 +303,7 @@ signmaker.vm = {
     if (swu!='undefined') {
       signmaker.vm.fsw(ssw.swu2fsw(swu),silent);
     } else {
-      fsw = 'M500x500';
+      fsw = signmaker.vm.signbox + "500x500";
       if (signmaker.vm.sort.length) fsw = "A" + signmaker.vm.sort.join('') + fsw;
       for (var i=0; i < signmaker.vm.list.length; i++) {
         fsw += signmaker.vm.list[i].key() + signmaker.vm.list[i].x() + 'x' + signmaker.vm.list[i].y();

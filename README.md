@@ -9,7 +9,7 @@
 
 @sutton-signwriting/signmaker is an online editor that can be <a href="https://www.sutton-signwriting.io/signmaker/" target="_parent">accessed directly</a>, <a href="https://www.sutton-signwriting.io/signmaker/demo.html" target="_parent">embedded in an iFrame</a>, and <a href="https://github.com/sutton-signwriting/signmaker/archive/refs/heads/main.zip" target="_parent">downloaded</a>.  It uses both Formal SignWriting in ASCII (FSW) and SignWriting in Unicode (SWU) character sets, along with the associated style string.  See <a href="https://tools.ietf.org/id/draft-slevinski-formal-signwriting-09.html" target="_parent">draft-slevinski-formal-signwriting</a> for detailed specification.
 
-## v1.1.0
+## v1.2.0
 
 > Author: <a href="https://SteveSlevinski.me" target="_parent">https://SteveSlevinski.me</a>  
 > Channel: <a href="https://www.youtube.com/channel/UCXu4AXlG0rXFtk_5SzumDow" target="_parent">https://www.youtube.com/channel/UCXu4AXlG0rXFtk_5SzumDow</a>  
@@ -40,7 +40,7 @@ SignMaker supports eight keys for URL query parameters
 * skin - alternate displays such as "inverse" and "colorful"
 * tab - the value for the tab to display
 
-Example: https://www.sutton-signwriting.io/signmaker/#?ui=ase&fsw=AS10011.1.019S2e704S2e748M525x535S2e748483x510S10011501x466S2e704510x500S10019476x475&skin=colorful  
+Example: https://www.sutton-signwriting.io/signmaker/#?ui=ase&fsw=AS10011S10019S2e704S2e748M525x535S2e748483x510S10011501x466S2e704510x500S10019476x475&skin=colorful  
 Top Half of Demo: https://www.sutton-signwriting.io/signmaker/demo.html
 
 ---
@@ -50,7 +50,7 @@ Top Half of Demo: https://www.sutton-signwriting.io/signmaker/demo.html
 2) send message to the iFrame using postMessage
 3) receive message from the iFrame with an event listener for message
 
-Bottom Half of Demo: https://www.sutton-signwriting.io/signmaker/demo.html#?fsw=AS10011.1.019S2e704S2e748M525x535S2e748483x510S10011501x466S2e704510x500S10019476x475&skin=colorful
+Bottom Half of Demo: https://www.sutton-signwriting.io/signmaker/demo.html#?fsw=AS10011S10019S2e704S2e748M525x535S2e748483x510S10011501x466S2e704510x500S10019476x475&skin=colorful
 
 - - -
 

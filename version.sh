@@ -32,8 +32,9 @@ function htmlVersion {
   fi; 
 }
 function htmlUpdate {
-  V=`htmlVersion $1`
-  sed -i 's/'${V}'/'${VERSION}'/' $1
+  V=$(htmlVersion "$1")
+  V_ESCAPED=$(echo "$V" | sed 's/\./\\./g')
+  sed -i "s/${V_ESCAPED}/${VERSION}/" "$1"
 }
 
 function mdVersion {  
@@ -48,9 +49,11 @@ function mdVersion {
   fi; 
 }
 function mdUpdate {
-  V=`mdVersion $1`
-  sed -i 's/'${V}'/'${VERSION}'/' $1
+  V=$(mdVersion "$1")
+  V_ESCAPED=$(echo "$V" | sed 's/\./\\./g')
+  sed -i "s/${V_ESCAPED}/${VERSION}/" "$1"
 }
+
 
 htmlUpdate index.html
 htmlUpdate demo.html

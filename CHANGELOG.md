@@ -38,6 +38,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add signmaker to sutton-signwriting/sgnw-components
 - add offset coordinate to S state and URLs
 
+
+## [1.2.0] - 2026-01-10
+### added
+- support for Left, Middle, and Right lane sign editing
+- support for horizontal writing sign editing
+
 ## [1.1.0] - 2022-02-27
 ### added
 - demo page loads state
@@ -64,6 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - iFrame messaging
 - demo page
 
-[Unreleased]: https://github.com/sutton-signwriting/signmaker/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/sutton-signwriting/signmaker/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/sutton-signwriting/signmaker/releases/tag/v1.1.0
 [1.1.0]: https://github.com/sutton-signwriting/signmaker/releases/tag/v1.1.0
 [1.0.0]: https://github.com/sutton-signwriting/signmaker/releases/tag/v1.0.0
