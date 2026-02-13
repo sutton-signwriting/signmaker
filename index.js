@@ -366,6 +366,7 @@ signmaker.vm = {
   center: function(){
     signmaker.vm.fsw(ssw.norm(signmaker.vm.fsw()));
   },
+  signbox: 'M',
   list: new spatials.List(),
   sort: [],
   history: ['{"list":[],"sort":[]'],
