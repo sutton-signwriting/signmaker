@@ -11,7 +11,7 @@
 ## Commit and tag
     git add ...
     git commit -m "version details"
-    git push origin master
+    git push origin main
     git tag -am "version details" v1.2.1
     git push --tags
 
