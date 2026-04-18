@@ -39,6 +39,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add offset coordinate to S state and URLs
 
 
+## [1.2.1] - 2026-04-18
+### fixed
+- fix lost symbol on save
+
 ## [1.2.0] - 2026-01-10
 ### added
 - support for Left, Middle, and Right lane sign editing
@@ -70,7 +74,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - iFrame messaging
 - demo page
 
-[Unreleased]: https://github.com/sutton-signwriting/signmaker/compare/v1.2.0...HEAD
-[1.2.0]: https://github.com/sutton-signwriting/signmaker/releases/tag/v1.1.0
+[Unreleased]: https://github.com/sutton-signwriting/signmaker/compare/v1.2.1...HEAD
+[1.2.1]: https://github.com/sutton-signwriting/signmaker/releases/tag/v1.2.1
+[1.2.0]: https://github.com/sutton-signwriting/signmaker/releases/tag/v1.2.0
 [1.1.0]: https://github.com/sutton-signwriting/signmaker/releases/tag/v1.1.0
 [1.0.0]: https://github.com/sutton-signwriting/signmaker/releases/tag/v1.0.0
