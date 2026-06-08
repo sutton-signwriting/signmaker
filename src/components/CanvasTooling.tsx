@@ -101,6 +101,12 @@ function GeneratePopover({ tool, onClose }: { tool: 'fingerspelling' | 'mouthing
     };
   }, [text, tool, signed, spoken]);
 
+  const accept = () => {
+    if (!fsw) return;
+    addSign(fsw);
+    onClose();
+  };
+
   return (
     <div className="tool-popover">
       <input
@@ -109,6 +115,12 @@ function GeneratePopover({ tool, onClose }: { tool: 'fingerspelling' | 'mouthing
         placeholder={tool === 'fingerspelling' ? 'Word to fingerspell…' : 'Word to mouth…'}
         value={text}
         onChange={(e) => setText(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            accept();
+          }
+        }}
       />
       <div className="tool-result">
         {status === 'loading' && <span className="tool-hint">…</span>}
@@ -119,10 +131,7 @@ function GeneratePopover({ tool, onClose }: { tool: 'fingerspelling' | 'mouthing
             className="tool-use"
             data-tip="Add to canvas"
             aria-label="Add to canvas"
-            onClick={() => {
-              addSign(fsw);
-              onClose();
-            }}
+            onClick={accept}
             dangerouslySetInnerHTML={{ __html: signSvg(fsw) }}
           />
         )}
