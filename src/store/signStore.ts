@@ -139,8 +139,13 @@ export const useSignStore = create<SignState>((set, get) => ({
   },
 
   copy: () => {
-    const selected = get().list.filter((s) => s.selected);
-    for (const s of selected) get().add({ key: s.key, x: s.x + 10, y: s.y + 10 });
+    const list = get().list;
+    const copies = list
+      .filter((s) => s.selected)
+      .map((s) => ({ key: s.key, ...clampPos(s.key, s.x + 10, s.y + 10), selected: true }));
+    if (!copies.length) return;
+    // Deselect the originals and select the new copies so they can be moved as a group.
+    set({ list: [...list.map((s) => ({ ...s, selected: false })), ...copies] });
     get().addhistory();
   },
 

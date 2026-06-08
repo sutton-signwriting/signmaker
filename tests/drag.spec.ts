@@ -49,6 +49,29 @@ test.describe('palette drag-and-drop (parity across both implementations)', () =
     expect(symbolCount(await fswlive(page))).toBe(0);
   });
 
+  test('duplicating a multi-selection selects all the new copies', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'legacy', 'multi-select is a modern-only feature');
+    await page.evaluate(() => {
+      const vm = (window as unknown as { signmaker: { vm: { clear: () => void; add: (s: object) => void } } }).signmaker.vm;
+      vm.clear();
+      vm.add({ key: 'S10000', x: 470, y: 480 });
+      vm.add({ key: 'S10011', x: 525, y: 510 });
+    });
+    const box = await page.locator('#signbox').boundingBox();
+    if (!box) throw new Error('no signbox');
+    const cx = box.x + box.width / 2;
+    const cy = box.y + box.height / 2;
+    await page.mouse.move(cx - 110, cy - 110);
+    await page.mouse.down();
+    await page.mouse.move(cx + 110, cy + 110, { steps: 12 });
+    await page.mouse.up();
+    await expect(page.locator('#signbox .selected')).toHaveCount(2);
+
+    await page.evaluate(() => (window as unknown as { signmaker: { vm: { copy: () => void } } }).signmaker.vm.copy());
+    expect(symbolCount(await fswlive(page))).toBe(4);
+    await expect(page.locator('#signbox .selected')).toHaveCount(2); // the new copies, not the originals
+  });
+
   test('dropped symbol is centered at the drop point', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name === 'legacy', 'precise drop centering is a modern-only refinement');
     const drop = await dragPaletteSymbolToSignbox(page, 0.5, 0.45);
