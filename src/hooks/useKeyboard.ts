@@ -45,6 +45,14 @@ const keyboard: Record<string, Check | Check[]> = {
     [221, 'shiftKey', 'metaKey'],
     [221, 'shiftKey', 'ctrlKey'],
   ],
+  sendBack: [
+    [219, 'shiftKey', 'metaKey'],
+    [219, 'shiftKey', 'ctrlKey'],
+  ],
+  selectAll: [
+    [65, 'metaKey'],
+    [65, 'ctrlKey'],
+  ],
   fingerspelling: [70],
   mouthing: [77],
   translate: [84],
@@ -70,6 +78,8 @@ const ACTIONS: { name: string; tool: string | null; run: (s: Store, ui: Ui) => v
   { name: 'recenter', tool: 'center', run: (s) => s.center() },
   { name: 'duplicate', tool: 'copy', run: (s) => s.copy() },
   { name: 'bringFront', tool: 'over', run: (s) => s.over() },
+  { name: 'sendBack', tool: null, run: (s) => s.under() },
+  { name: 'selectAll', tool: null, run: (s) => s.selectAll() },
   {
     name: 'fingerspelling',
     tool: null,

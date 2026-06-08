@@ -45,6 +45,7 @@ interface SignState {
   add: (symbol?: { key: string; x: number; y: number }) => void;
   addSeq: (key: string, position: number) => void;
   selnone: () => void;
+  selectAll: () => void;
   selectOnly: (index: number) => void;
   selectIndices: (indices: number[]) => void;
   select: (step: number) => void;
@@ -58,6 +59,7 @@ interface SignState {
   fill: (step: number) => void;
   rotate: (step: number) => void;
   over: () => void;
+  under: () => void;
   move: (x: number, y: number) => void;
   nudge: (x: number, y: number) => void;
   commit: () => void;
@@ -127,6 +129,8 @@ export const useSignStore = create<SignState>((set, get) => ({
   },
 
   selnone: () => set({ list: get().list.map((s) => ({ ...s, selected: false })) }),
+
+  selectAll: () => set({ list: get().list.map((s) => ({ ...s, selected: true })) }),
 
   selectOnly: (index) =>
     set({ list: get().list.map((s, i) => ({ ...s, selected: i === index })) }),
@@ -267,6 +271,13 @@ export const useSignStore = create<SignState>((set, get) => ({
     const selected = get().list.filter((s) => s.selected);
     const rest = get().list.filter((s) => !s.selected);
     set({ list: [...rest, ...selected.map((s) => ({ ...s, selected: true }))] });
+    get().addhistory();
+  },
+
+  under: () => {
+    const selected = get().list.filter((s) => s.selected);
+    const rest = get().list.filter((s) => !s.selected);
+    set({ list: [...selected.map((s) => ({ ...s, selected: true })), ...rest] });
     get().addhistory();
   },
 
