@@ -1,0 +1,48 @@
+{
+  "name": "@sutton-signwriting/signmaker",
+  "description": "Create and edit signs using Formal SignWriting in ASCII (FSW) or SignWriting in Unicode (SWU)",
+  "version": "1.2.1",
+  "license": "MIT",
+  "author": {
+    "name": "Steve Slevinski",
+    "email": "slevinski@signwriting.org",
+    "url": "https://steve.signwriting.org"
+  },
+  "homepage": "https://sutton-signwriting.github.io/signmaker/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sutton-signwriting/signmaker.git"
+  },
+  "bugs": "https://github.com/sutton-signwriting/signmaker/issues",
+  "keywords": [
+    "SignWriting",
+    "editor",
+    "sign language",
+    "signmaker",
+    "fsw",
+    "swu"
+  ],
+  "files": [
+    "README.*",
+    "CHANGELOG.*",
+    "package.json",
+    "index.*",
+    "demo.*",
+    "noscript.css",
+    "signmaker.png",
+    "/config/*.js",
+    "/config/alphabet/README.md",
+    "/config/alphabet/alphabet-*.js",
+    "/lib/*.js"
+  ],
+  "scripts": {
+    "premd2html": "./version.sh",
+    "md2html": "markdown-it README.md -o README.html;markdown-it CHANGELOG.md -o CHANGELOG.html;"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@types/node": "^25.2.3",
+    "markdown-it": "^12.3.0",
+    "serve": "^14.2.5"
+  }
+}

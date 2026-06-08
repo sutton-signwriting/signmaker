@@ -1,0 +1,1005 @@
+@import "tailwindcss";
+
+/* SignWriting fonts shipped by @sutton-signwriting/font-ttf (bundled by Vite); layout ported from legacy/index.css. */
+@font-face {
+  font-family: "SuttonSignWritingLine";
+  src:
+    local('SuttonSignWritingLine'),
+    url('@sutton-signwriting/font-ttf/font/SuttonSignWritingLine.ttf') format('truetype');
+}
+@font-face {
+  font-family: "SuttonSignWritingFill";
+  src:
+    local('SuttonSignWritingFill'),
+    url('@sutton-signwriting/font-ttf/font/SuttonSignWritingFill.ttf') format('truetype');
+}
+@font-face {
+  font-family: "SuttonSignWritingOneD";
+  src:
+    local('SuttonSignWritingOneD'),
+    url('@sutton-signwriting/font-ttf/font/SuttonSignWritingOneD.ttf') format('truetype');
+}
+svg {
+  overflow: visible;
+}
+
+/* Instant portal tooltip (faster than the native title attribute). */
+.tip-bubble {
+  position: fixed;
+  z-index: 9999;
+  display: none;
+  padding: 3px 7px;
+  border-radius: 5px;
+  background: #1e293b;
+  color: #fff;
+  font-size: 0.72rem;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+*, *:before, *:after {
+  -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
+}
+
+body {
+  touch-action: pan-y;
+}
+
+body, body:before, body:after {
+  margin:0;
+}
+html,body {
+  overflow: auto;
+  height: 100%;
+  margin: 0;
+  -webkit-overflow-scrolling: touch;
+}
+
+.clickable:hover{
+  background: #c7c7c7;
+}
+
+/* Full-size symbol that tracks the cursor while dragging from the palette. */
+.palette-ghost {
+  position: fixed;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/*
+ * Symbols (and the palette ghost) move via left/top, and their SVG uses overflow:visible,
+ * which leaves repaint trails as they move. Promoting each to its own compositing layer
+ * makes the browser repaint the vacated area cleanly.
+ */
+.signbox-symbol,
+.palette-ghost {
+  transform: translateZ(0);
+}
+
+/* While a symbol is being dragged, drop its cell chrome so only the glyph follows the pointer. */
+.dragging {
+  border-color: transparent !important;
+  background: transparent !important;
+  z-index: 10;
+}
+
+/* Don't show a focus ring for pointer interaction (incl. during drag); keep it for keyboard. */
+.btn:focus:not(:focus-visible),
+.cmd:focus:not(:focus-visible),
+.cmdslim:focus:not(:focus-visible),
+.cmdhalf:focus:not(:focus-visible),
+.cmdlong:focus:not(:focus-visible),
+.row button:focus:not(:focus-visible) {
+  outline: none;
+}
+.btn, .cmd, .cmdrow, .cmdfull, .cmdlong, .cmdslim, .cmdhalf {
+  position: relative;
+  float: left;
+  text-align: center;
+  background: #e7e7e7;
+  border: 1px solid black;
+  -webkit-appearance: none;
+  -webkit-border-radius: 0;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  cursor: default;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+}
+
+.info{
+  background: darkgray;
+}
+
+.sort{
+  width: 100%;
+  height: 5%;
+  border: 1px solid black;
+}
+
+.btn {
+  width: 25%;
+  height: 9%;
+}
+
+.smaller {
+  height: 6%;
+}
+.checked {
+    background-color:gray;
+    border:1px solid black;
+}
+.checked:hover {
+    color:white;
+}
+.unchecked {
+    border:1px solid black;
+    color:gray;
+}
+.unchecked:hover {
+    color:black;
+}
+
+.disabled{
+  border: 1px solid black;
+  color: #e7e7e7;
+}
+.cmd {
+  width: 25%;
+  height: 20%;
+}
+.cmdrow {
+  width: 100%;
+  height: 10%;
+}
+.cmdfull {
+  width: 100%;
+  height: 20%;
+}
+.cmdlong {
+  width: 75%;
+  height: 10%;
+}
+.cmdslim{
+  width: 25%;
+  height: 10%;
+}
+.cmdhalf{
+  width: 50%;
+  height: 10%;
+}
+
+.btn p, .cmd p, .cmdslim p, .cmdhalf p, .cmdrow p, .cmdfull p, .cmdlong p {
+  position: relative;
+  margin:auto;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+  -ms-transform: translateY(-50%);
+  transform: translateY(-50%);
+  cursor: default;
+  font-size:2vmin;
+}
+
+.btn:has(.lbl), .cmd:has(.lbl), .cmdslim:has(.lbl), .cmdhalf:has(.lbl), .cmdlong:has(.lbl) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lbl {
+  cursor: default;
+  font-size: 2vmin;
+}
+
+.btn svg, .cmd svg, .cmdslim svg, .cmdhalf svg, .cmdrow svg, .cmdfull svg, .cmdlong svg, .sort svg {
+  display: block;
+  margin: 2.5% auto;
+  height: 90%;
+  max-width: 90%;
+  max-height: 90%;
+  cursor: default;
+}
+.sort svg g text.sym-line {
+  fill: gray !important;
+}
+
+.disabled {
+  color: gray;
+}
+.disabled svg g text.sym-line{
+  fill: gray !important;
+}
+.cmd.unselected:hover svg g text.sym-line{
+  fill: black !important;
+}
+.cmd.selected {
+  background: #b1b1b1;
+  border: 1px solid black;
+  border-top-left-radius: 25%;
+  border-top-right-radius: 25%;
+}
+.cmd.unselected {
+  background: #ffffff;
+  border: 1px dashed black;
+  border-top-left-radius: 25%;
+  border-top-right-radius: 25%;
+  color: gray;
+}
+.cmd.unselected:hover {
+  border: 1px solid gray;
+  color: black;
+}
+.cmd.unselected svg g text.sym-line{
+  fill: gray !important;
+}
+.cmd.unselected:hover svg g text.sym-line{
+  fill: black !important;
+}
+
+#palette {
+  position: fixed;
+  margin-left: 60%;
+  top: 0;
+  width: 40%;
+  height: 100%;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+}
+
+/* Modern palette chrome: always-on Save + breadcrumb navigation. */
+.palette-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #cbd5e1;
+}
+.palette-save {
+  flex-shrink: 0;
+  border: none;
+  border-radius: 0.375rem;
+  background: #1e293b;
+  color: #fff;
+  padding: 0.4rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+.palette-save:hover {
+  background: #334155;
+}
+.palette-crumbs {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  overflow: hidden;
+  color: #64748b;
+}
+.crumb {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.25rem;
+}
+.crumb-link {
+  border: none;
+  background: none;
+  color: #64748b;
+  border-radius: 0.25rem;
+  cursor: pointer;
+}
+.crumb-link:hover {
+  color: #0f172a;
+  background: #f1f5f9;
+}
+.crumb-sep {
+  color: #cbd5e1;
+}
+.crumb-sym svg {
+  display: block;
+  height: 1.5rem;
+  width: auto;
+}
+
+.palette-grid {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.row {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+.row button {
+  position: relative;
+  flex: 1;
+  border: 1px solid #e2e8f0;
+  padding: 0;
+  background: transparent;
+}
+.row button.clickable:hover {
+  background: #f1f5f9;
+}
+
+.palette-foot {
+  display: flex;
+  justify-content: center;
+  padding: 0.5rem;
+  border-top: 1px solid #cbd5e1;
+}
+.palette-mirror {
+  border: 1px solid #cbd5e1;
+  border-radius: 0.375rem;
+  background: #fff;
+  padding: 0.3rem 2rem;
+  cursor: pointer;
+}
+.palette-mirror:hover {
+  background: #f1f5f9;
+}
+.palette-mirror.active {
+  background: #1e293b;
+  border-color: #1e293b;
+  color: #fff;
+}
+.palette-mirror svg {
+  display: block;
+  height: 1.75rem;
+  margin: auto;
+}
+
+.row button svg, .cmdrow svg, .cmdfull svg, .cmdlong svg {
+  position: absolute;
+  display: block;
+  top:2.5%;
+  bottom: 2.5%;
+  left: 2.5%;
+  right: 2.5%;
+  margin: auto;
+  max-width: 95%;
+  max-height: 95%;
+  cursor: default;
+}
+
+#palette .row button.topleft {
+  float: left;
+  width: 16.6%;
+  height: 100%;
+  border:0px;
+  overflow: visible;
+}
+#palette .row button.topleft svg {
+  display: block;
+  float: left;
+  top:initial;
+  bottom: initial;
+  left: initial;
+  right: initial;
+  margin: initial;
+  max-width: initial;
+  max-height: initial;
+  top:0;
+  left:0;
+}
+
+#signmaker {
+  position:fixed; 
+  margin-left: 0%;
+  top:0%; 
+  width:60%;
+  height: 100%;
+}
+
+#sequence {
+  float: right;
+  width: 10%;
+  height: 100%;
+  border: 1px solid black;
+}
+#signbox {
+  float: left;
+  width: 90%;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Valid SignWriting placement region (symbol coordinates 250–749). */
+.valid-range {
+  border: 1px dashed #cbd5e1;
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+/* Rubber-band multi-select rectangle. */
+.rubber-band {
+  border: 1px solid #2563eb;
+  background: rgba(37, 99, 235, 0.12);
+  pointer-events: none;
+  z-index: 15;
+}
+
+/* Canvas overlay controls (icons top corners, keyboard-style arrow pad bottom-right). */
+.canvas-tools {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  z-index: 20;
+}
+.canvas-tools-left { top: 8px; left: 8px; }
+.canvas-tools-right { top: 8px; right: 8px; }
+.canvas-edit {
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  flex-direction: column;
+  gap: 8px;
+}
+.edit-section {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(4px);
+}
+.edit-section-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  color: #94a3b8;
+}
+.canvas-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.85);
+  color: #334155;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+.canvas-btn:hover:not(:disabled) { background: #fff; color: #0f172a; border-color: #94a3b8; }
+.canvas-btn:disabled { opacity: 0.35; cursor: default; }
+.canvas-divider { width: 1px; height: 22px; background: #cbd5e1; margin: 0 2px; }
+
+/* Keyboard-triggered "as if pressed" flash for any control button. */
+.is-pressed {
+  background: #1e293b !important;
+  color: #fff !important;
+  border-color: #1e293b !important;
+}
+
+.arrow-pad {
+  bottom: 12px;
+  right: 12px;
+  display: grid;
+  grid-template-columns: repeat(3, 34px);
+  grid-template-rows: repeat(2, 34px);
+  gap: 4px;
+  z-index: 20;
+}
+.arrow-key {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #334155;
+  cursor: pointer;
+  box-shadow: 0 2px 0 #cbd5e1;
+}
+.arrow-key:hover { background: #fff; }
+.arrow-key.active,
+.arrow-key:active { background: #1e293b; color: #fff; transform: translateY(1px); box-shadow: none; }
+#arrow-up { grid-column: 2; grid-row: 1; }
+#arrow-left { grid-column: 1; grid-row: 2; }
+#arrow-down { grid-column: 2; grid-row: 2; }
+#arrow-right { grid-column: 3; grid-row: 2; }
+
+/* Bottom-left tooling: language picker + fingerspelling / mouthing / translate. */
+.canvas-tooling {
+  bottom: 12px;
+  left: 12px;
+  z-index: 25;
+}
+.tooling-buttons {
+  display: flex;
+  gap: 4px;
+}
+.tool-popover {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  margin-bottom: 8px;
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+}
+.tool-field {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: #475569;
+}
+.tool-field > span { width: 3.5rem; flex-shrink: 0; }
+.tool-field select {
+  flex: 1;
+  min-width: 0;
+  max-width: 100%;
+  font-size: 0.85rem;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 0.25rem 0.4rem;
+}
+.tool-input { border: 1px solid #cbd5e1; border-radius: 8px; padding: 0.4rem 0.6rem; font-size: 0.9rem; }
+.tool-result {
+  min-height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+.tool-use { border: none; background: none; cursor: pointer; padding: 6px; }
+.tool-use svg { max-height: 90px; max-width: 200px; }
+.tool-clear {
+  align-self: flex-end;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8rem;
+  color: #475569;
+  cursor: pointer;
+}
+.tool-clear:hover { background: #f1f5f9; }
+.tool-hint { color: #94a3b8; font-size: 0.85rem; }
+.tool-soon { margin: 0; padding: 1rem; text-align: center; color: #64748b; }
+
+.confirm-dialog {
+  margin: auto; /* restore the modal centering Tailwind's preflight margin reset removes */
+  min-width: 18rem;
+  max-width: 92vw;
+  border: none;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+}
+.confirm-dialog p { margin: 0 0 0.25rem; font-size: 1rem; }
+.confirm-dialog::backdrop { background: rgba(15, 23, 42, 0.4); }
+.confirm-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem; }
+.confirm-cancel,
+.confirm-ok { padding: 0.4rem 1rem; border-radius: 8px; cursor: pointer; border: 1px solid #cbd5e1; }
+.confirm-cancel { background: #fff; color: #334155; }
+.confirm-ok { background: #dc2626; color: #fff; border-color: #dc2626; }
+#signbox .mid{
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+#signbox .mid img, #signbox .mid svg{
+  position:absolute;
+  top: 0;  
+  bottom: 0;  
+  left: 0;  
+  right: 0; 
+  margin:auto;
+}
+#signbox > div {
+  position: absolute;
+  cursor: default;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+#signbox > div > svg {
+  display: block;
+  top:0;
+  left:0;
+}
+#signbox > div.selected svg g text.sym-line {
+  fill: blue !important;
+}
+#command {
+  float: left;
+  width: 90%;
+  height: 50%;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+}
+.command-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+.seg-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+.export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: none;
+  border-radius: 0.375rem;
+  background: #1e293b;
+  color: #fff;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.export-btn:hover { background: #334155; }
+.command-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+}
+.command-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.6rem;
+}
+.cmd-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-content: flex-start;
+}
+.more-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.more-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+  color: #475569;
+}
+.more-row > span:first-child {
+  width: 6rem;
+  flex-shrink: 0;
+}
+.more-row select,
+.more-row input,
+.more-row #fsw,
+.more-row #swu {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+  float: none;
+  margin: 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.375rem;
+  padding: 0.3rem 0.5rem;
+  font-size: 0.85rem;
+}
+
+/* Export dialog */
+.export-dialog,
+.settings-dialog {
+  margin: auto; /* restore the modal centering Tailwind's preflight margin reset removes */
+  border: none;
+  border-radius: 12px;
+  padding: 0;
+  width: min(480px, 92vw);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+}
+.settings-dialog { width: min(440px, 92vw); max-height: 85vh; overflow: auto; }
+.settings-dialog .more-grid { padding: 1.25rem; }
+.export-dialog::backdrop,
+.settings-dialog::backdrop { background: rgba(15, 23, 42, 0.4); }
+.export-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+.export-header h2 { margin: 0; font-size: 1.1rem; }
+.dialog-close {
+  border: none;
+  background: none;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+}
+.dialog-close:hover { background: #f1f5f9; color: #0f172a; }
+.export-formats { display: flex; gap: 0.25rem; }
+.export-tab {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  padding: 0.3rem 0.9rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+.export-tab-active { background: #1e293b; color: #fff; border-color: #1e293b; }
+.export-body { display: flex; gap: 1rem; padding: 1.25rem; }
+.export-preview {
+  flex-shrink: 0;
+  width: 140px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+  overflow: hidden;
+}
+.export-options { flex: 1; display: flex; flex-direction: column; gap: 0.5rem; }
+.export-field { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: #475569; }
+.export-field > span { width: 5.5rem; flex-shrink: 0; }
+.export-field input { flex: 1; min-width: 0; border: 1px solid #cbd5e1; border-radius: 0.375rem; padding: 0.25rem 0.5rem; }
+.export-check input { flex: none; }
+.export-actions { display: flex; justify-content: flex-end; gap: 0.5rem; padding: 1rem 1.25rem; border-top: 1px solid #e2e8f0; }
+.export-download {
+  border: none;
+  border-radius: 8px;
+  background: #1e293b;
+  color: #fff;
+  padding: 0.4rem 1.25rem;
+  cursor: pointer;
+}
+.export-download:hover { background: #334155; }
+.cmdrow input, .cmdlong input, .cmdhalf input, .cmdfull input, #size, #pad, #line, #fill, #back, select, input.terms{
+  margin-top: 0.5%;
+  margin-bottom: 0;
+  margin-left: 0;
+  margin-right: 0;
+  height: 90%;
+  width: 90%;
+  padding:0;
+  font-size:2.5vh;
+  line-height:2.5vh;
+  vertical-align: top;
+}
+
+.cmdfull input{
+  height: 90%;
+  width: 90%;
+  padding:0;
+  font-size:5vh;
+  line-height:5vh;
+  vertical-align: top;
+}
+
+.cmdrow p.fsw, .cmdrow p.swu, .cmdfull p.swu{
+  float: left;
+  margin-left: 2%;
+}
+#fsw, #swu, #styling{
+  float: right;
+  margin-right: 4%;
+  font-size:1.5vh;
+  width: 75%;
+}
+#swu {
+  font-family: SuttonSignWritingOneD;
+}
+.ssw-one-d {
+  font-family: SuttonSignWritingOneD;
+}
+.cmdrow #swu {
+  font-size:1.5vh;
+}
+.cmdfull #swu {
+  font-size:3vh;
+}
+#signtext {
+  margin-left: 30%;
+  width: 40%;
+  background: blue;
+  margin: auto;
+}
+
+textarea {
+  width: 100%;
+  height: 60%;
+  resize: none;
+}
+
+input.warning, select.warning, textarea.warning {
+  border: 1px solid #f0ad4e;
+}
+input.danger, select.danger, textarea.danger {
+  border: 1px solid #d9534f;
+}
+
+body.inverse {
+  background: black;
+}
+
+body.inverse .btn {
+  background: black;
+  color: white;
+  border: 1px solid white;
+}
+
+body.inverse .cmd, body.inverse .cmdrow, body.inverse .cmdfull, body.inverse .cmdlong, body.inverse .cmdslim, body.inverse .cmdhalf, body.inverse .cmd.selected, body.inverse #dictionary, body.inverse #sequence {
+  border: 1px solid white;
+  background: black;
+}
+body.inverse .cmd.unselected {
+  background: black;
+  border: 1px dashed white;
+  color: gray;
+}
+body.inverse .cmd p, body.inverse .cmdslim p , body.inverse .cmdhalf p, body.inverse .cmdrow p, body.inverse .cmdfull p, body.inverse .cmdlong p, body.inverse .pageinfo {
+  color: white;
+}
+body.inverse .disabled p, body.inverse .cmd.unselected p {
+  color: gray;
+}
+body.inverse .cmd.unselected:hover {
+  border: 1px solid gray;
+}
+body.inverse .cmd.unselected:hover p {
+  color: white;
+}
+body.inverse .disabled svg g text.sym-line, body.inverse .cmd.unselected svg g text.sym-line{
+  fill: gray !important;
+}
+body.inverse .btn svg g text.sym-line, body.inverse .cmd.unselected:hover svg g text.sym-line, body.inverse .cmd svg g text.sym-line, body.inverse .cmdslim svg g text.sym-line, body.inverse .cmdhalf svg g text.sym-line, body.inverse .cmdrow svg g text.sym-line, body.inverse .cmdfull svg g text.sym-line, body.inverse .cmdlong svg g text.sym-line, body.inverse #header p svg g text.sym-line, body.inverse .row button svg g text.sym-line, body.inverse #signbox div svg g text.sym-line {
+  fill: white !important;
+}
+body.inverse .btn svg g text.sym-fill, body.inverse .cmd svg g text.sym-fill, body.inverse .cmdslim svg g text.sym-fill, body.inverse .cmdhalf svg g text.sym-fill, body.inverse .cmdrow svg g text.sym-fill, body.inverse .cmdfull svg g text.sym-fill, body.inverse .cmdlong svg g text.sym-fill, body.inverse #header p svg g text.sym-fill, body.inverse .row button svg g text.sym-fill, body.inverse .sort svg g text.sym-fill, body.inverse #signbox div svg g text.sym-fill {
+  fill: black !important;
+}
+body.inverse #signbox .selected svg g text.sym-line{
+  fill: yellow !important;
+}
+
+body.inverse #header p, body.inverse select, body.inverse input, body.inverse .btn p, body.inverse #search {
+  background:black;
+  color:white;
+}
+body.inverse .checked, body.inverse .checked p {
+    background-color:darkgray;
+}
+body.inverse .row button, body.inverse .sort {
+  border: 1px solid white;
+}
+
+body.inverse #dictionary .button{
+  background: black;
+  border: 1px solid white;
+  color: white;
+}
+body.inverse #dictionary .button.disabled{
+  color: black;
+}
+
+body.inverse #header, body.inverse #palette, body.inverse #command, body.inverse #signtext, body.inverse #signbox, body.inverse #signmaker{
+  background: black;
+}
+
+body.colorful #dictionary, body.colorful .cmd.selected.dictionary {
+  background: darkseagreen;
+}
+
+body.colorful #sequence, body.colorful #signbox, body.colorful .cmd.selected.edit {
+  background: #ffffcc;
+}
+
+body.colorful #command {
+  background: sandybrown;
+}
+
+body.colorful  #palette, body.colorful .cmd.selected.search {
+  background: lightblue;
+}
+
+body.waiting * {
+    cursor: progress !important;
+}
+
+svg g text {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Top-layer entrance/exit animations for dialogs (Baseline 2024). */
+.confirm-dialog,
+.export-dialog,
+.settings-dialog {
+  opacity: 0;
+  transform: scale(0.96);
+  transition: opacity 0.18s ease, transform 0.18s ease, display 0.18s allow-discrete, overlay 0.18s allow-discrete;
+}
+.confirm-dialog[open],
+.export-dialog[open],
+.settings-dialog[open] {
+  opacity: 1;
+  transform: scale(1);
+  @starting-style {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+.confirm-dialog::backdrop,
+.export-dialog::backdrop,
+.settings-dialog::backdrop {
+  background: rgba(15, 23, 42, 0);
+  transition: background-color 0.18s ease, display 0.18s allow-discrete, overlay 0.18s allow-discrete;
+}
+.confirm-dialog[open]::backdrop,
+.export-dialog[open]::backdrop,
+.settings-dialog[open]::backdrop {
+  background: rgba(15, 23, 42, 0.4);
+  @starting-style {
+    background: rgba(15, 23, 42, 0);
+  }
+}
+
+/* Entry animation for the bottom-left tooling popover. */
+.tool-popover {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  @starting-style {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confirm-dialog,
+  .export-dialog,
+  .settings-dialog,
+  .tool-popover {
+    transform: none;
+    transition-duration: 0.05s;
+  }
+}

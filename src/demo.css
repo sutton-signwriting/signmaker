@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "SuttonSignWritingOneD";
+  src:
+    local('SuttonSignWritingOneD'),
+    url('@sutton-signwriting/font-ttf/font/SuttonSignWritingOneD.ttf') format('truetype');
+}
+
+.swu {
+  font-family: SuttonSignWritingOneD;
+}

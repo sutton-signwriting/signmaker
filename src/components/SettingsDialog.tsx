@@ -1,0 +1,100 @@
+import { type RefObject } from 'react';
+import { useSignStore } from '../store/signStore';
+import { useUiStore, type Skin } from '../store/uiStore';
+import { useTranslation } from '../hooks/useTranslation';
+import { useLightDismiss } from '../hooks/useLightDismiss';
+import { languageNames } from '../i18n/translate';
+import { ALPHABETS } from '../i18n/alphabets';
+import { applyState, share } from '../lib/bridge';
+
+const PILL = 'rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm hover:bg-slate-100';
+const PILL_ACTIVE = 'rounded-md border border-slate-800 bg-slate-800 px-3 py-1.5 text-sm text-white';
+
+export function SettingsDialog({ dialogRef }: { dialogRef: RefObject<HTMLDialogElement | null> }) {
+  useLightDismiss(dialogRef);
+  const ui = useUiStore();
+  const sign = useSignStore();
+  const { t } = useTranslation();
+  const alpha = ALPHABETS.map((code) => ({ code, name: t(`sgn_${code}`) })).sort((a, b) => a.name.localeCompare(b.name));
+  const gridSeg = (g: string) => (ui.grid === g ? PILL_ACTIVE : PILL);
+  const skinSeg = (sk: Skin) => (ui.skin === sk || (sk === '' && !ui.skin) ? PILL_ACTIVE : PILL);
+
+  return (
+    <dialog ref={dialogRef} className="settings-dialog">
+      <header className="export-header">
+        <h2>Settings</h2>
+        <button type="button" className="dialog-close" aria-label={t('cancel')} onClick={() => dialogRef.current?.close()}>
+          ✕
+        </button>
+      </header>
+      <div className="more-grid">
+        <label className="more-row">
+          <span>{t('userInterface')}</span>
+          <select value={ui.ui} onChange={(e) => applyState({ ui: e.target.value })}>
+            {languageNames().map(({ code, name }) => (
+              <option key={code} value={code}>
+                {name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="more-row">
+          <span>{t('alphabet')}</span>
+          <select value={ui.alphabet} onChange={(e) => applyState({ alphabet: e.target.value })}>
+            <option value="iswa">{t('iswa2010')}</option>
+            {alpha.map(({ code, name }) => (
+              <option key={code} value={code}>
+                {name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="more-row">
+          <span>Grid</span>
+          <div className="seg-group">
+            <button type="button" className={gridSeg('0')} onClick={() => ui.set({ grid: '0' })}>
+              {t('grid0')}
+            </button>
+            <button type="button" className={gridSeg('1')} onClick={() => ui.set({ grid: '1' })}>
+              {t('grid1')}
+            </button>
+            <button type="button" className={gridSeg('2')} onClick={() => ui.set({ grid: '2' })}>
+              {t('grid2')}
+            </button>
+          </div>
+        </div>
+        <div className="more-row">
+          <span>Skin</span>
+          <div className="seg-group">
+            <button type="button" className={skinSeg('')} onClick={() => ui.set({ skin: '' })}>
+              {t('blackOnWhite')}
+            </button>
+            <button type="button" className={skinSeg('inverse')} onClick={() => ui.set({ skin: 'inverse' })}>
+              {t('whiteOnBlack')}
+            </button>
+            <button type="button" className={skinSeg('colorful')} onClick={() => ui.set({ skin: 'colorful' })}>
+              {t('colorful')}
+            </button>
+          </div>
+        </div>
+        <label className="more-row">
+          <span>FSW</span>
+          <input id="fsw" value={sign.fswlive()} onInput={(e) => sign.setFromFsw((e.target as HTMLInputElement).value)} />
+        </label>
+        <label className="more-row">
+          <span>SWU</span>
+          <input id="swu" value={sign.swulive()} onInput={(e) => sign.setFromSwu((e.target as HTMLInputElement).value)} />
+        </label>
+        <label className="more-row">
+          <span>Styling</span>
+          <input value={ui.styling} onInput={(e) => ui.set({ styling: (e.target as HTMLInputElement).value })} />
+        </label>
+        {'share' in navigator ? (
+          <button type="button" className={PILL} onClick={share}>
+            {t('share')}
+          </button>
+        ) : null}
+      </div>
+    </dialog>
+  );
+}

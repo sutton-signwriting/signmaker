@@ -1,0 +1,227 @@
+import { useEffect, useMemo, useRef, useState, type ComponentType, type SVGProps } from 'react';
+import { useSignStore } from '../store/signStore';
+import { useLangStore } from '../store/langStore';
+import { IANASignedLanguages } from '../i18n/ianaLanguages';
+import { signedLanguageName, spokenLanguageName, spokenApiCode, mouthingSupported } from '../i18n/languageNames';
+import { signSvg } from '../lib/sign';
+import { LanguageIcon, HandIcon, MouthIcon, TranslateIcon } from './icons';
+
+const API = 'https://signwriting-sxie2r74ua-uc.a.run.app';
+const DEBOUNCE_MS = 300;
+const SPOKEN_CODES = [...new Set(IANASignedLanguages.map((l) => l.spoken).filter(Boolean))];
+const SIGNED_TO_SPOKEN = new Map(IANASignedLanguages.map((l) => [l.signed, l.spoken]));
+const byName = (a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name);
+
+type Tool = 'language' | 'fingerspelling' | 'mouthing' | 'translate';
+
+function LanguagePopover() {
+  const { signed, spoken, set } = useLangStore();
+
+  const spokenOptions = useMemo(() => SPOKEN_CODES.map((code) => ({ code, name: spokenLanguageName(code) })).sort(byName), []);
+  // Cross-filter: when a spoken language is chosen, only its paired sign languages are offered.
+  const signedOptions = useMemo(() => {
+    const seen = new Set<string>();
+    return IANASignedLanguages.filter((l) => l.signed && (!spoken || l.spoken === spoken))
+      .filter((l) => (seen.has(l.signed) ? false : (seen.add(l.signed), true)))
+      .map((l) => ({ code: l.signed, name: signedLanguageName(l.signed) }))
+      .sort(byName);
+  }, [spoken]);
+
+  return (
+    <div className="tool-popover">
+      <label className="tool-field">
+        <span>Spoken</span>
+        <select value={spoken} onChange={(e) => set({ spoken: e.target.value, signed: SIGNED_TO_SPOKEN.get(signed) === e.target.value ? signed : '' })}>
+          <option value="">—</option>
+          {spokenOptions.map(({ code, name }) => (
+            <option key={code} value={code}>
+              {name}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="tool-field">
+        <span>Signed</span>
+        <select value={signed} onChange={(e) => set({ signed: e.target.value, spoken: SIGNED_TO_SPOKEN.get(e.target.value) || spoken })}>
+          <option value="">—</option>
+          {signedOptions.map(({ code, name }) => (
+            <option key={code} value={code}>
+              {name}
+            </option>
+          ))}
+        </select>
+      </label>
+      <button type="button" className="tool-clear" onClick={() => set({ signed: '', spoken: '' })}>
+        Clear
+      </button>
+    </div>
+  );
+}
+
+function GeneratePopover({ tool, onClose }: { tool: 'fingerspelling' | 'mouthing'; onClose: () => void }) {
+  const [text, setText] = useState('');
+  const [fsw, setFsw] = useState('');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'empty'>('idle');
+  const inputRef = useRef<HTMLInputElement>(null);
+  const setFromFsw = useSignStore((s) => s.setFromFsw);
+  const { signed, spoken } = useLangStore();
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    if (!text.trim()) {
+      setFsw('');
+      setStatus('idle');
+      return;
+    }
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      setStatus('loading');
+      const url =
+        tool === 'fingerspelling'
+          ? `${API}/fingerspelling?text=${encodeURIComponent(text)}&signed_language=${signed}`
+          : `${API}/mouthing?text=${encodeURIComponent(text)}&spoken_language=${spokenApiCode(spoken)}`;
+      try {
+        const res = await fetch(url, { signal: controller.signal });
+        const data = (await res.json()) as { fsw?: string };
+        setFsw(data.fsw || '');
+        setStatus(data.fsw ? 'idle' : 'empty');
+      } catch {
+        if (!controller.signal.aborted) {
+          setFsw('');
+          setStatus('empty');
+        }
+      }
+    }, DEBOUNCE_MS);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [text, tool, signed, spoken]);
+
+  return (
+    <div className="tool-popover">
+      <input
+        ref={inputRef}
+        className="tool-input"
+        placeholder={tool === 'fingerspelling' ? 'Word to fingerspell…' : 'Word to mouth…'}
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+      />
+      <div className="tool-result">
+        {status === 'loading' && <span className="tool-hint">…</span>}
+        {status === 'empty' && <span className="tool-hint">No result</span>}
+        {status === 'idle' && fsw && (
+          <button
+            type="button"
+            className="tool-use"
+            data-tip="Add to canvas"
+            aria-label="Add to canvas"
+            onClick={() => {
+              setFromFsw(fsw);
+              onClose();
+            }}
+            dangerouslySetInnerHTML={{ __html: signSvg(fsw) }}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ToolButton({
+  tool,
+  label,
+  Icon,
+  disabled,
+  open,
+  onToggle,
+}: {
+  tool: Tool;
+  label: string;
+  Icon: ComponentType<SVGProps<SVGSVGElement>>;
+  disabled?: boolean;
+  open: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      className={`canvas-btn${open ? ' is-pressed' : ''}`}
+      data-tip={label}
+      aria-label={label}
+      disabled={disabled}
+      onClick={onToggle}
+      data-tool={tool}
+    >
+      <Icon />
+    </button>
+  );
+}
+
+export function CanvasTooling() {
+  const [open, setOpen] = useState<Tool | null>(null);
+  const ref = useRef<HTMLDivElement>(null);
+  const { signed, spoken } = useLangStore();
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: PointerEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(null);
+    };
+    const onEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(null);
+    };
+    document.addEventListener('pointerdown', onDown);
+    document.addEventListener('keydown', onEsc);
+    return () => {
+      document.removeEventListener('pointerdown', onDown);
+      document.removeEventListener('keydown', onEsc);
+    };
+  }, [open]);
+
+  const toggle = (tool: Tool) => setOpen((cur) => (cur === tool ? null : tool));
+
+  return (
+    <div className="canvas-tooling" ref={ref}>
+      {open === 'language' && <LanguagePopover />}
+      {(open === 'fingerspelling' || open === 'mouthing') && (
+        <GeneratePopover tool={open} onClose={() => setOpen(null)} />
+      )}
+      {open === 'translate' && (
+        <div className="tool-popover">
+          <p className="tool-soon">Coming soon</p>
+        </div>
+      )}
+      <div className="tooling-buttons">
+        <ToolButton tool="language" label="Languages" Icon={LanguageIcon} open={open === 'language'} onToggle={() => toggle('language')} />
+        <ToolButton
+          tool="fingerspelling"
+          label={signed ? 'Fingerspelling' : 'Fingerspelling — pick a signed language'}
+          Icon={HandIcon}
+          disabled={!signed}
+          open={open === 'fingerspelling'}
+          onToggle={() => toggle('fingerspelling')}
+        />
+        <ToolButton
+          tool="mouthing"
+          label={!spoken ? 'Mouthing — pick a spoken language' : !mouthingSupported(spoken) ? 'Mouthing not available for this language' : 'Mouthing'}
+          Icon={MouthIcon}
+          disabled={!spoken || !mouthingSupported(spoken)}
+          open={open === 'mouthing'}
+          onToggle={() => toggle('mouthing')}
+        />
+        <ToolButton
+          tool="translate"
+          label="Translate"
+          Icon={TranslateIcon}
+          disabled={!signed && !spoken}
+          open={open === 'translate'}
+          onToggle={() => toggle('translate')}
+        />
+      </div>
+    </div>
+  );
+}
