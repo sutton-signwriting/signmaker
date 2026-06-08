@@ -98,6 +98,31 @@ test.describe('palette drag-and-drop (parity across both implementations)', () =
     expect(await fswlive(page)).toBe(before); // mirror is its own inverse
   });
 
+  test('rotating a multi-selection rotates the group around its center', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'legacy', 'group rotate is a modern-only feature');
+    await page.evaluate(() => {
+      const vm = (window as unknown as { signmaker: { vm: { clear: () => void; add: (s: object) => void } } }).signmaker.vm;
+      vm.clear();
+      vm.add({ key: 'S10000', x: 450, y: 480 });
+      vm.add({ key: 'S10011', x: 560, y: 520 });
+    });
+    const box = await page.locator('#signbox').boundingBox();
+    if (!box) throw new Error('no signbox');
+    const cx = box.x + box.width / 2;
+    const cy = box.y + box.height / 2;
+    await page.mouse.move(cx - 120, cy - 120);
+    await page.mouse.down();
+    await page.mouse.move(cx + 120, cy + 120, { steps: 12 });
+    await page.mouse.up();
+    await expect(page.locator('#signbox .selected')).toHaveCount(2);
+
+    const before = await fswlive(page);
+    await page.evaluate(() => (window as unknown as { signmaker: { vm: { rotate: (n: number) => void } } }).signmaker.vm.rotate(1));
+    const after = await fswlive(page);
+    expect(after).not.toBe(before); // positions and glyphs rotate
+    expect(symbolCount(after)).toBe(2);
+  });
+
   test('adding a generated sign appends it (selected), not replacing', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name === 'legacy', 'addSign (fingerspelling/mouthing) is a modern-only feature');
     await page.evaluate(() => {

@@ -2,7 +2,7 @@ import { useRef, type ComponentType, type PointerEvent, type ReactNode, type SVG
 import { useSignStore } from '../store/signStore';
 import { useTranslation } from '../hooks/useTranslation';
 import { startMove, stopMove, type Direction } from '../lib/arrowRepeat';
-import { tip } from '../lib/shortcuts';
+import { tip, HINTS } from '../lib/shortcuts';
 import { useLightDismiss } from '../hooks/useLightDismiss';
 import { SettingsDialog } from './SettingsDialog';
 import { ExportDialog } from './ExportDialog';
@@ -142,10 +142,10 @@ export function CanvasControls() {
           <SelectNextIcon />
         </IconButton>
         <span className="canvas-divider" />
-        <IconButton id="tool-copy" label="Duplicate" onClick={s.copy}>
+        <IconButton id="tool-copy" label={`Duplicate (${HINTS.copy})`} onClick={s.copy}>
           <DuplicateIcon />
         </IconButton>
-        <IconButton id="tool-over" label="Bring to Front" onClick={s.over}>
+        <IconButton id="tool-over" label={`Bring to Front (${HINTS.over})`} onClick={s.over}>
           <BringToFrontIcon />
         </IconButton>
         <IconButton id="tool-center" label={tip(t, 'center')} onClick={s.center}>

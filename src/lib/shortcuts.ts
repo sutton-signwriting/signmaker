@@ -18,6 +18,11 @@ export const HINTS: Record<string, string> = {
   fillNext: 'N',
   selectPrev: '⇧⇥',
   selectNext: '⇥',
+  copy: `${MOD}D`,
+  over: `${MOD}⇧]`,
+  fingerspelling: 'F',
+  mouthing: 'M',
+  translate: 'T',
 };
 
 /** Tooltip text: the translated label plus its shortcut hint, e.g. "Undo (⌘Z)". */

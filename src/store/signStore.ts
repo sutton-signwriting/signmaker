@@ -224,7 +224,42 @@ export const useSignStore = create<SignState>((set, get) => ({
   },
 
   rotate: (step) => {
-    set({ list: get().list.map((s) => (s.selected ? { ...s, key: sign.rotate(s.key, step) } : s)) });
+    const list = get().list;
+    const selected = list.filter((s) => s.selected);
+    if (!selected.length) return;
+    // Rotate the selection's bounding box by 45° about its center: each symbol's glyph rotates
+    // and (for a multi-symbol selection) its position rotates around the center too.
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    for (const s of selected) {
+      const [w, h] = sign.symbolSize(s.key);
+      minX = Math.min(minX, s.x);
+      minY = Math.min(minY, s.y);
+      maxX = Math.max(maxX, s.x + w);
+      maxY = Math.max(maxY, s.y + h);
+    }
+    const cx = (minX + maxX) / 2;
+    const cy = (minY + maxY) / 2;
+    const angle = (step > 0 ? 1 : -1) * (Math.PI / 4);
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+    set({
+      list: list.map((s) => {
+        if (!s.selected) return s;
+        const [w, h] = sign.symbolSize(s.key);
+        const dx = s.x + w / 2 - cx;
+        const dy = s.y + h / 2 - cy;
+        const key = sign.rotate(s.key, step);
+        // Place so the rotated glyph's center lands on the rotated point — use the NEW size,
+        // since rotation changes the symbol's dimensions (otherwise it pivots off-center).
+        const [nw, nh] = sign.symbolSize(key);
+        const nx = cx + dx * cos - dy * sin - nw / 2;
+        const ny = cy + dx * sin + dy * cos - nh / 2;
+        return { ...s, key, ...clampPos(key, nx, ny) };
+      }),
+    });
     get().addhistory();
   },
 

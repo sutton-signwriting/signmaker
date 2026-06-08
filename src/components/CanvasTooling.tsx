@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ComponentType, type SVGProps } from 'react';
 import { useSignStore } from '../store/signStore';
 import { useLangStore } from '../store/langStore';
+import { useToolStore, type Tool } from '../store/toolStore';
 import { IANASignedLanguages } from '../i18n/ianaLanguages';
 import { signedLanguageName, spokenLanguageName, spokenApiCode, mouthingSupported } from '../i18n/languageNames';
 import { signSvg } from '../lib/sign';
@@ -11,8 +12,6 @@ const DEBOUNCE_MS = 300;
 const SPOKEN_CODES = [...new Set(IANASignedLanguages.map((l) => l.spoken).filter(Boolean))];
 const SIGNED_TO_SPOKEN = new Map(IANASignedLanguages.map((l) => [l.signed, l.spoken]));
 const byName = (a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name);
-
-type Tool = 'language' | 'fingerspelling' | 'mouthing' | 'translate';
 
 function LanguagePopover() {
   const { signed, spoken, set } = useLangStore();
@@ -171,7 +170,7 @@ function ToolButton({
 }
 
 export function CanvasTooling() {
-  const [open, setOpen] = useState<Tool | null>(null);
+  const { open, setOpen } = useToolStore();
   const ref = useRef<HTMLDivElement>(null);
   const { signed, spoken } = useLangStore();
 
@@ -191,7 +190,7 @@ export function CanvasTooling() {
     };
   }, [open]);
 
-  const toggle = (tool: Tool) => setOpen((cur) => (cur === tool ? null : tool));
+  const toggle = (tool: Tool) => setOpen(open === tool ? null : tool);
 
   return (
     <div className="canvas-tooling" ref={ref}>
@@ -208,7 +207,7 @@ export function CanvasTooling() {
         <ToolButton tool="language" label="Languages" Icon={LanguageIcon} open={open === 'language'} onToggle={() => toggle('language')} />
         <ToolButton
           tool="fingerspelling"
-          label={signed ? 'Fingerspelling' : 'Fingerspelling — pick a signed language'}
+          label={signed ? 'Fingerspelling (F)' : 'Fingerspelling — pick a signed language'}
           Icon={HandIcon}
           disabled={!signed}
           open={open === 'fingerspelling'}
@@ -216,7 +215,13 @@ export function CanvasTooling() {
         />
         <ToolButton
           tool="mouthing"
-          label={!spoken ? 'Mouthing — pick a spoken language' : !mouthingSupported(spoken) ? 'Mouthing not available for this language' : 'Mouthing'}
+          label={
+            !spoken
+              ? 'Mouthing — pick a spoken language'
+              : !mouthingSupported(spoken)
+                ? 'Mouthing not available for this language'
+                : 'Mouthing (M)'
+          }
           Icon={MouthIcon}
           disabled={!spoken || !mouthingSupported(spoken)}
           open={open === 'mouthing'}
@@ -224,7 +229,7 @@ export function CanvasTooling() {
         />
         <ToolButton
           tool="translate"
-          label="Translate"
+          label={signed || spoken ? 'Translate (T)' : 'Translate'}
           Icon={TranslateIcon}
           disabled={!signed && !spoken}
           open={open === 'translate'}

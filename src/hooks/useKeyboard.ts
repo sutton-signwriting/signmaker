@@ -1,6 +1,9 @@
 import { useEffect } from 'react';
 import { useSignStore } from '../store/signStore';
 import { useUiStore } from '../store/uiStore';
+import { useLangStore } from '../store/langStore';
+import { useToolStore } from '../store/toolStore';
+import { mouthingSupported } from '../i18n/languageNames';
 import { startMove, stopMove, stopAllMoves, type Direction } from '../lib/arrowRepeat';
 import { flashButton } from '../lib/shortcuts';
 
@@ -34,6 +37,17 @@ const keyboard: Record<string, Check | Check[]> = {
     [36, 'ctrlKey'],
     [36, 'metaKey'],
   ],
+  duplicate: [
+    [68, 'metaKey'],
+    [68, 'ctrlKey'],
+  ],
+  bringFront: [
+    [221, 'shiftKey', 'metaKey'],
+    [221, 'shiftKey', 'ctrlKey'],
+  ],
+  fingerspelling: [70],
+  mouthing: [77],
+  translate: [84],
 };
 const PREVENT = [8, 9, 191];
 const ARROWS: Record<number, Direction> = { 37: 'left', 38: 'up', 39: 'right', 40: 'down' };
@@ -54,6 +68,31 @@ const ACTIONS: { name: string; tool: string | null; run: (s: Store, ui: Ui) => v
   { name: 'fillBack', tool: 'fillPrev', run: (s) => s.fill(-1) },
   { name: 'fillNext', tool: 'fillNext', run: (s) => s.fill(1) },
   { name: 'recenter', tool: 'center', run: (s) => s.center() },
+  { name: 'duplicate', tool: 'copy', run: (s) => s.copy() },
+  { name: 'bringFront', tool: 'over', run: (s) => s.over() },
+  {
+    name: 'fingerspelling',
+    tool: null,
+    run: () => {
+      if (useLangStore.getState().signed) useToolStore.getState().setOpen('fingerspelling');
+    },
+  },
+  {
+    name: 'mouthing',
+    tool: null,
+    run: () => {
+      const { spoken } = useLangStore.getState();
+      if (spoken && mouthingSupported(spoken)) useToolStore.getState().setOpen('mouthing');
+    },
+  },
+  {
+    name: 'translate',
+    tool: null,
+    run: () => {
+      const { signed, spoken } = useLangStore.getState();
+      if (signed || spoken) useToolStore.getState().setOpen('translate');
+    },
+  },
 ];
 
 function isTyping(target: EventTarget | null): boolean {
