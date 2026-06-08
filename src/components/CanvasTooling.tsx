@@ -63,7 +63,7 @@ function GeneratePopover({ tool, onClose }: { tool: 'fingerspelling' | 'mouthing
   const [fsw, setFsw] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'empty'>('idle');
   const inputRef = useRef<HTMLInputElement>(null);
-  const setFromFsw = useSignStore((s) => s.setFromFsw);
+  const addSign = useSignStore((s) => s.addSign);
   const { signed, spoken } = useLangStore();
 
   useEffect(() => {
@@ -120,7 +120,7 @@ function GeneratePopover({ tool, onClose }: { tool: 'fingerspelling' | 'mouthing
             data-tip="Add to canvas"
             aria-label="Add to canvas"
             onClick={() => {
-              setFromFsw(fsw);
+              addSign(fsw);
               onClose();
             }}
             dangerouslySetInnerHTML={{ __html: signSvg(fsw) }}

@@ -168,7 +168,9 @@ export function SignBox() {
         <div className="valid-range" style={{ left: mid.w - 250, top: mid.h - 250, width: 500, height: 500 }} />
       )}
       {list.map((sym, index) => (
-        <DraggableSymbol key={index} sym={sym} index={index} mid={mid} />
+        // Key on the symbol value too: changing the glyph (mirror/rotate/…) remounts the
+        // element, giving a clean repaint instead of leaving a faint artifact of the old glyph.
+        <DraggableSymbol key={`${index}:${sym.key}`} sym={sym} index={index} mid={mid} />
       ))}
       {rubber && <div className="rubber-band" style={{ left: rubber.x, top: rubber.y, width: rubber.w, height: rubber.h }} />}
       <CanvasControls />

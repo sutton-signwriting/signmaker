@@ -40,6 +40,7 @@ interface SignState {
   addhistory: () => void;
   setFromFsw: (fsw: string) => void;
   setFromSwu: (swu: string) => void;
+  addSign: (fsw: string) => void;
 
   add: (symbol?: { key: string; x: number; y: number }) => void;
   addSeq: (key: string, position: number) => void;
@@ -97,6 +98,16 @@ export const useSignStore = create<SignState>((set, get) => ({
 
   setFromSwu: (swu) => {
     get().setFromFsw(sign.swu2fsw(swu));
+  },
+
+  // Merge another sign's symbols into the current one (dropping its box marker) and select them.
+  addSign: (fsw) => {
+    const { symbols } = sign.parseSign(fsw);
+    if (!symbols.length) return;
+    const existing = get().list.map((s) => ({ ...s, selected: false }));
+    const added = symbols.map((s) => ({ key: s.key, ...clampPos(s.key, s.x, s.y), selected: true }));
+    set({ list: [...existing, ...added] });
+    get().addhistory();
   },
 
   add: (symbol) => {
@@ -184,7 +195,26 @@ export const useSignStore = create<SignState>((set, get) => ({
   },
 
   mirror: () => {
-    set({ list: get().list.map((s) => (s.selected ? { ...s, key: sign.mirror(s.key) } : s)) });
+    const list = get().list;
+    const selected = list.filter((s) => s.selected);
+    if (!selected.length) return;
+    // Reflect each selected symbol's position across the selection's horizontal center,
+    // so a multi-symbol selection mirrors as a group (a single symbol just flips in place).
+    let minX = Infinity;
+    let maxX = -Infinity;
+    for (const s of selected) {
+      const [w] = sign.symbolSize(s.key);
+      minX = Math.min(minX, s.x);
+      maxX = Math.max(maxX, s.x + w);
+    }
+    set({
+      list: list.map((s) => {
+        if (!s.selected) return s;
+        const key = sign.mirror(s.key);
+        const [w] = sign.symbolSize(s.key);
+        return { ...s, key, ...clampPos(key, minX + maxX - s.x - w, s.y) };
+      }),
+    });
     get().addhistory();
   },
 

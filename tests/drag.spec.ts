@@ -72,6 +72,44 @@ test.describe('palette drag-and-drop (parity across both implementations)', () =
     await expect(page.locator('#signbox .selected')).toHaveCount(2); // the new copies, not the originals
   });
 
+  test('mirroring a multi-selection reflects positions and is its own inverse', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'legacy', 'group mirror is a modern-only feature');
+    await page.evaluate(() => {
+      const vm = (window as unknown as { signmaker: { vm: { clear: () => void; add: (s: object) => void } } }).signmaker.vm;
+      vm.clear();
+      vm.add({ key: 'S10000', x: 430, y: 500 });
+      vm.add({ key: 'S10011', x: 560, y: 500 });
+    });
+    const box = await page.locator('#signbox').boundingBox();
+    if (!box) throw new Error('no signbox');
+    const cx = box.x + box.width / 2;
+    const cy = box.y + box.height / 2;
+    await page.mouse.move(cx - 110, cy - 110);
+    await page.mouse.down();
+    await page.mouse.move(cx + 110, cy + 110, { steps: 12 });
+    await page.mouse.up();
+    await expect(page.locator('#signbox .selected')).toHaveCount(2);
+
+    const mirror = () => page.evaluate(() => (window as unknown as { signmaker: { vm: { mirror: () => void } } }).signmaker.vm.mirror());
+    const before = await fswlive(page);
+    await mirror();
+    expect(await fswlive(page)).not.toBe(before); // glyphs and positions both change
+    await mirror();
+    expect(await fswlive(page)).toBe(before); // mirror is its own inverse
+  });
+
+  test('adding a generated sign appends it (selected), not replacing', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'legacy', 'addSign (fingerspelling/mouthing) is a modern-only feature');
+    await page.evaluate(() => {
+      const vm = (window as unknown as { signmaker: { vm: { clear: () => void; add: (s: object) => void; addSign: (f: string) => void } } }).signmaker.vm;
+      vm.clear();
+      vm.add({ key: 'S10000', x: 500, y: 500 });
+      vm.addSign('M515x563S11502477x437S14a20492x457S1dc20484x477');
+    });
+    expect(symbolCount(await fswlive(page))).toBe(4); // 1 original + 3 added, box marker dropped
+    await expect(page.locator('#signbox .selected')).toHaveCount(3); // only the added symbols
+  });
+
   test('dropped symbol is centered at the drop point', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name === 'legacy', 'precise drop centering is a modern-only refinement');
     const drop = await dragPaletteSymbolToSignbox(page, 0.5, 0.45);

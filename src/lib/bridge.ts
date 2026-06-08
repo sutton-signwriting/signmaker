@@ -90,6 +90,7 @@ export function installBridge(): void {
   w.signmaker = {
     vm: {
       add: (symbol: { key: string; x: number; y: number }) => store().add(symbol),
+      addSign: (fsw: string) => store().addSign(fsw),
       addSeq: (key: string, position: number) => store().addSeq(key, position),
       delete: () => store().remove(),
       copy: () => store().copy(),
