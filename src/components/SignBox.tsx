@@ -35,6 +35,8 @@ function useMid(boxRef: RefObject<HTMLDivElement | null>, symbols: Sym[]): Mid {
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
+    // Symbol sizes come from the SignWriting fonts; re-measure once they finish loading.
+    document.fonts?.ready.then(measure);
     return () => ro.disconnect();
   }, [boxRef, symbols]);
 

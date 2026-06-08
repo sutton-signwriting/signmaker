@@ -13,13 +13,27 @@ export interface Sym {
 const SYMBOL_SPATIAL = /S[1-3][0-9a-f]{2}[0-5][0-9a-f][0-9]{3}x[0-9]{3}/g;
 const COORD = /[0-9]{3}x[0-9]{3}/g;
 
-export const signSvg = (fsw: string): string => fontFsw.signSvg(fsw) || '';
-export const symbolSvg = (key: string): string => (key ? fontFsw.symbolSvg(key) || '' : '');
-export const signPng = (fsw: string): string => fontFsw.signPng(fsw) || '';
-export const signNormalize = (fsw: string): string => fontFsw.signNormalize(fsw);
+// font-ttf measures glyphs via canvas, which throws until the SignWriting fonts have loaded.
+// Guard every render/measure entry point so the app still mounts before fonts are ready.
+const strOr = (fn: () => string | undefined, fallback: string): string => {
+  try {
+    return fn() || fallback;
+  } catch {
+    return fallback;
+  }
+};
+
+export const signSvg = (fsw: string): string => strOr(() => fontFsw.signSvg(fsw), '');
+export const symbolSvg = (key: string): string => (key ? strOr(() => fontFsw.symbolSvg(key), '') : '');
+export const signPng = (fsw: string): string => strOr(() => fontFsw.signPng(fsw), '');
+export const signNormalize = (fsw: string): string => strOr(() => fontFsw.signNormalize(fsw), fsw);
 export const symbolSize = (key: string): [number, number] => {
-  const size = fontFsw.symbolSize(key) as [number, number] | undefined;
-  return Array.isArray(size) ? size : [0, 0];
+  try {
+    const size = fontFsw.symbolSize(key) as [number, number] | undefined;
+    return Array.isArray(size) ? size : [0, 0];
+  } catch {
+    return [0, 0];
+  }
 };
 export const fsw2swu = (text: string): string => convert.fsw2swu(text);
 export const swu2fsw = (text: string): string => convert.swu2fsw(text);
