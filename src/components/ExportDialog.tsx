@@ -5,6 +5,7 @@ import { useTranslation } from '../hooks/useTranslation';
 import { useLightDismiss } from '../hooks/useLightDismiss';
 import { signPng, signSvg, withStyle } from '../lib/sign';
 import { CopyIcon, CheckIcon } from './icons';
+import { Sign } from './Sign';
 
 type Format = 'png' | 'svg';
 
@@ -23,7 +24,7 @@ async function copyPngToClipboard(dataUrl: string) {
 function Field({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
     <label className="export-field">
-      <span>{label}</span>
+      <span><Sign text={label} /></span>
       <input value={value} onChange={(e) => onChange(e.target.value)} />
     </label>
   );
@@ -59,13 +60,13 @@ export function ExportDialog({ dialogRef }: { dialogRef: RefObject<HTMLDialogEle
   return (
     <dialog ref={dialogRef} className="export-dialog">
       <header className="export-header">
-        <h2>{t('download')}</h2>
+        <h2><Sign text={t('download')} /></h2>
         <div className="export-formats">
           <button type="button" className={seg(format === 'png')} onClick={() => setFormat('png')}>
-            {t('pngImage')}
+            <Sign text={t('pngImage')} />
           </button>
           <button type="button" className={seg(format === 'svg')} onClick={() => setFormat('svg')}>
-            {t('svgImage')}
+            <Sign text={t('svgImage')} />
           </button>
         </div>
       </header>
@@ -92,7 +93,7 @@ export function ExportDialog({ dialogRef }: { dialogRef: RefObject<HTMLDialogEle
           <Field label={t('fill')} value={ui.fill} onChange={(fill) => ui.set({ fill })} />
           <Field label={t('background')} value={ui.back} onChange={(back) => ui.set({ back })} />
           <label className="export-field export-check">
-            <span>{t('colorize')}</span>
+            <span><Sign text={t('colorize')} /></span>
             <input type="checkbox" checked={ui.colorize} onChange={(e) => ui.set({ colorize: e.target.checked })} />
           </label>
           <Field label="Styling" value={ui.styling} onChange={(styling) => ui.set({ styling })} />
@@ -101,10 +102,10 @@ export function ExportDialog({ dialogRef }: { dialogRef: RefObject<HTMLDialogEle
 
       <footer className="export-actions">
         <button type="button" className="confirm-cancel" onClick={() => dialogRef.current?.close()}>
-          {t('cancel')}
+          <Sign text={t('cancel')} />
         </button>
         <button type="button" className="export-download" onClick={download}>
-          {t('download')}
+          <Sign text={t('download')} />
         </button>
       </footer>
     </dialog>

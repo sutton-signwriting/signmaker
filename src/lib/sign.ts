@@ -24,6 +24,9 @@ const strOr = (fn: () => string | undefined, fallback: string): string => {
 };
 
 export const signSvg = (fsw: string): string => strOr(() => fontFsw.signSvg(fsw), '');
+
+/** True for a full FSW sign (box marker + symbols) — e.g. ASL UI labels, which render as SignWriting. */
+export const isFsw = (text: string): boolean => /^[MLBR][0-9]{3}x[0-9]{3}S/.test(text);
 export const symbolSvg = (key: string): string => (key ? strOr(() => fontFsw.symbolSvg(key), '') : '');
 export const signPng = (fsw: string): string => strOr(() => fontFsw.signPng(fsw), '');
 export const signNormalize = (fsw: string): string => strOr(() => fontFsw.signNormalize(fsw), fsw);

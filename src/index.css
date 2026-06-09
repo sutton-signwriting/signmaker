@@ -37,6 +37,25 @@ svg {
   pointer-events: none;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
+/* ASL tooltips/labels are SignWriting signs (black on transparent) — show on white. */
+.tip-bubble.tip-sign {
+  background: #fff;
+  padding: 6px 8px;
+}
+.tip-bubble.tip-sign svg {
+  display: block;
+  height: 2.6em;
+  width: auto;
+}
+.inline-sign {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+.inline-sign svg {
+  height: 1.5em;
+  width: auto;
+}
 
 *, *:before, *:after {
   -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;

@@ -1,3 +1,5 @@
+import { isFsw, signSvg } from './sign';
+
 let bubble: HTMLDivElement | null = null;
 let current: HTMLElement | null = null;
 
@@ -16,7 +18,13 @@ function show(target: HTMLElement): void {
   const text = target.getAttribute('data-tip');
   if (!bubble || !text) return hide();
   current = target;
-  bubble.textContent = text;
+  if (isFsw(text)) {
+    bubble.innerHTML = signSvg(text);
+    bubble.classList.add('tip-sign');
+  } else {
+    bubble.textContent = text;
+    bubble.classList.remove('tip-sign');
+  }
   bubble.style.display = 'block';
   const r = target.getBoundingClientRect();
   let left: number;
