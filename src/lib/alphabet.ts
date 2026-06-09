@@ -8,7 +8,8 @@ declare global {
 
 /** Load a palette symbol set by sign-language code, mirroring the legacy script-injection loader. */
 export function loadAlphabet(code: string): Promise<Alphabet> {
-  const src = !code || code === 'iswa' ? `/alphabet.js?${code}` : `/alphabet/alphabet-${code}.js?${code}`;
+  const base = import.meta.env.BASE_URL; // honors the deployment base path (e.g. project Pages)
+  const src = !code || code === 'iswa' ? `${base}alphabet.js?${code}` : `${base}alphabet/alphabet-${code}.js?${code}`;
   return new Promise((resolve, reject) => {
     delete window.alphabet;
     const script = document.createElement('script');
