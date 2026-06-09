@@ -159,12 +159,15 @@ export interface StyleOptions {
 /** Compose the FSW + style string consumed by signSvg/signPng for the PNG/SVG tabs. */
 export function withStyle(fsw: string, opts: StyleOptions): string {
   if (!fsw) return fsw;
+  // Always emit an explicit zoom: font-ttf's signPng leaves canvas dimensions NaN (→ a 1×1
+  // blank PNG) when the style omits zoom, unlike signSvg which defaults it to 1.
+  const zoom = parseFloat(opts.size);
   const composed = coreStyle.compose({
     colorize: opts.colorize || undefined,
     padding: opts.pad ? parseInt(opts.pad, 10) : undefined,
     background: opts.back || undefined,
     detail: opts.line || opts.fill ? [opts.line || 'black', opts.fill || 'white'] : undefined,
-    zoom: opts.size && opts.size !== '1' ? parseFloat(opts.size) : undefined,
+    zoom: Number.isFinite(zoom) && zoom > 0 ? zoom : 1,
   });
   return `${fsw}${composed ?? ''}${opts.styling ?? ''}`;
 }
