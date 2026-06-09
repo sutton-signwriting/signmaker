@@ -58,7 +58,7 @@ test.describe('URL parameters (parity across both implementations)', () => {
     await waitForApp(page);
     await page.locator('#tool-export').click();
     await expect(page.locator('dialog.export-dialog')).toBeVisible();
-    await expect(page.locator('.export-preview svg')).toHaveCount(1);
+    await expect(page.locator('.export-preview-img svg')).toHaveCount(1);
     await expect(page.locator('.export-formats button')).toHaveCount(2);
   });
 

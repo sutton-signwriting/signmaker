@@ -94,6 +94,19 @@ export const DuplicateIcon = (p: SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+export const CopyIcon = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}>
+    <rect x="9" y="9" width="11" height="11" rx="2" />
+    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+  </svg>
+);
+
+export const CheckIcon = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}>
+    <path d="M20 6L9 17l-5-5" />
+  </svg>
+);
+
 export const BringToFrontIcon = (p: SVGProps<SVGSVGElement>) => (
   <svg {...base(p)}>
     <rect x="9" y="9" width="11" height="11" rx="2" fill="currentColor" stroke="none" />

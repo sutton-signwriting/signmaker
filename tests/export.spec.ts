@@ -21,4 +21,19 @@ test.describe('PNG/SVG export', () => {
     expect(width).toBeGreaterThan(1); // a blank 1x1 canvas was the bug
     expect(height).toBeGreaterThan(1);
   });
+
+  test('copies the PNG to the clipboard from the preview', async ({ page, context }, testInfo) => {
+    test.skip(testInfo.project.name === 'legacy', 'modern export dialog is a rewrite-only feature');
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await page.goto(`/index.html#?fsw=${SIGNS.M}`);
+    await waitForApp(page);
+
+    await page.locator('#tool-export').click();
+    await page.locator('.export-copy').click();
+    await expect(page.locator('.export-copy')).toHaveAttribute('data-tip', 'Copied'); // set after the write resolves
+    const types = await page.evaluate(async () =>
+      (await navigator.clipboard.read()).flatMap((item) => item.types),
+    );
+    expect(types).toContain('image/png');
+  });
 });

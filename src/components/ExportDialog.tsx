@@ -4,6 +4,7 @@ import { useUiStore } from '../store/uiStore';
 import { useTranslation } from '../hooks/useTranslation';
 import { useLightDismiss } from '../hooks/useLightDismiss';
 import { signPng, signSvg, withStyle } from '../lib/sign';
+import { CopyIcon, CheckIcon } from './icons';
 
 type Format = 'png' | 'svg';
 
@@ -12,6 +13,11 @@ function triggerDownload(href: string, name: string) {
   link.href = href;
   link.download = name;
   link.click();
+}
+
+async function copyPngToClipboard(dataUrl: string) {
+  const blob = await (await fetch(dataUrl)).blob();
+  await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
 }
 
 function Field({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
@@ -28,6 +34,7 @@ export function ExportDialog({ dialogRef }: { dialogRef: RefObject<HTMLDialogEle
   const ui = useUiStore();
   const fswnorm = useSignStore((s) => s.fswnorm());
   const [format, setFormat] = useState<Format>('png');
+  const [copied, setCopied] = useState(false);
   useLightDismiss(dialogRef);
 
   const styled = withStyle(fswnorm, ui);
@@ -41,6 +48,12 @@ export function ExportDialog({ dialogRef }: { dialogRef: RefObject<HTMLDialogEle
       const blob = new Blob([signSvg(styled)], { type: 'image/svg+xml' });
       triggerDownload(URL.createObjectURL(blob), 'sign.svg');
     }
+  };
+
+  const copy = async () => {
+    await copyPngToClipboard(signPng(styled));
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1200);
   };
 
   return (
@@ -58,7 +71,20 @@ export function ExportDialog({ dialogRef }: { dialogRef: RefObject<HTMLDialogEle
       </header>
 
       <div className="export-body">
-        <div className="export-preview" dangerouslySetInnerHTML={{ __html: signSvg(styled) || '' }} />
+        <div className="export-preview">
+          <div className="export-preview-img" dangerouslySetInnerHTML={{ __html: signSvg(styled) || '' }} />
+          {format === 'png' && (
+            <button
+              type="button"
+              className="export-copy"
+              data-tip={copied ? 'Copied' : 'Copy image'}
+              aria-label="Copy image to clipboard"
+              onClick={copy}
+            >
+              {copied ? <CheckIcon /> : <CopyIcon />}
+            </button>
+          )}
+        </div>
         <div className="export-options">
           <Field label={t('size')} value={ui.size} onChange={(size) => ui.set({ size })} />
           <Field label={t('pad')} value={ui.pad} onChange={(pad) => ui.set({ pad })} />
