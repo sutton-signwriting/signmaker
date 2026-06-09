@@ -40,4 +40,33 @@ export interface Messages {
   whiteOnBlack: string;
   colorful: string;
   share: string;
+  clear: string;
+
+  duplicate: string;
+  bringToFront: string;
+  settings: string;
+  export: string;
+  grid: string;
+  skin: string;
+  variation: string;
+  languages: string;
+  fingerspelling: string;
+  mouthing: string;
+  translate: string;
+  pickSignedLanguage: string;
+  pickSpokenLanguage: string;
+  mouthingUnavailable: string;
+  comingSoon: string;
+  addToCanvas: string;
+  noResult: string;
+  wordToFingerspell: string;
+  wordToMouth: string;
+  spoken: string;
+  signed: string;
+  copyImage: string;
+  copied: string;
+  moveUp: string;
+  moveDown: string;
+  moveLeft: string;
+  moveRight: string;
 }

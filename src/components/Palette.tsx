@@ -4,6 +4,7 @@ import { useSignStore } from '../store/signStore';
 import { useTranslation } from '../hooks/useTranslation';
 import { useDrag, pointInElement, seqPosition } from '../hooks/useDrag';
 import { save } from '../lib/bridge';
+import { SYMBOL_NAMES } from '../i18n/symbolNames';
 import { symbolSvg, symbolSize, mirror as mirrorKey } from '../lib/sign';
 import { HomeIcon } from './icons';
 
@@ -119,7 +120,7 @@ export function Palette() {
         {grid.map((row, ri) => (
           <div className="row" key={ri}>
             {row.map((key, ci) => (
-              <PaletteCell key={`${ri}-${ci}-${key}`} symbolKey={key} tooltip={tooltipPrefix && key ? t(tooltipPrefix + key.slice(0, 4)) : ''} />
+              <PaletteCell key={`${ri}-${ci}-${key}`} symbolKey={key} tooltip={tooltipPrefix && key ? (SYMBOL_NAMES[tooltipPrefix + key.slice(0, 4)] ?? '') : ''} />
             ))}
           </div>
         ))}

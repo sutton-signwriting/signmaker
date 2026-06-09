@@ -142,10 +142,10 @@ export function CanvasControls() {
           <SelectNextIcon />
         </IconButton>
         <span className="canvas-divider" />
-        <IconButton id="tool-copy" label={`Duplicate (${HINTS.copy})`} onClick={s.copy}>
+        <IconButton id="tool-copy" label={`${t('duplicate')} (${HINTS.copy})`} onClick={s.copy}>
           <DuplicateIcon />
         </IconButton>
-        <IconButton id="tool-over" label={`Bring to Front (${HINTS.over})`} onClick={s.over}>
+        <IconButton id="tool-over" label={`${t('bringToFront')} (${HINTS.over})`} onClick={s.over}>
           <BringToFrontIcon />
         </IconButton>
         <IconButton id="tool-center" label={tip(t, 'center')} onClick={s.center}>
@@ -164,10 +164,10 @@ export function CanvasControls() {
           <TrashIcon />
         </IconButton>
         <span className="canvas-divider" />
-        <IconButton id="tool-settings" label="Settings" onClick={() => settingsRef.current?.showModal()}>
+        <IconButton id="tool-settings" label={t('settings')} onClick={() => settingsRef.current?.showModal()}>
           <SettingsIcon />
         </IconButton>
-        <IconButton id="tool-export" label="Export" onClick={() => exportRef.current?.showModal()}>
+        <IconButton id="tool-export" label={t('export')} onClick={() => exportRef.current?.showModal()}>
           <ExportIcon />
         </IconButton>
       </div>
@@ -183,7 +183,7 @@ export function CanvasControls() {
         </div>
         <StepSection
           Icon={VariationIcon}
-          section="Variation"
+          section={t('variation')}
           minusId="tool-variationPrev"
           plusId="tool-variationNext"
           minusTip={tip(t, 'variationPrev')}
@@ -193,7 +193,7 @@ export function CanvasControls() {
         />
         <StepSection
           Icon={FillIcon}
-          section="Fill"
+          section={t('fill')}
           minusId="tool-fillPrev"
           plusId="tool-fillNext"
           minusTip={tip(t, 'fillPrev')}
@@ -204,16 +204,16 @@ export function CanvasControls() {
       </div>
 
       <div className="arrow-pad">
-        <ArrowKey dir="up" label="Move up (↑)">
+        <ArrowKey dir="up" label={`${t('moveUp')} (↑)`}>
           <ChevronUp />
         </ArrowKey>
-        <ArrowKey dir="left" label="Move left (←)">
+        <ArrowKey dir="left" label={`${t('moveLeft')} (←)`}>
           <ChevronLeft />
         </ArrowKey>
-        <ArrowKey dir="down" label="Move down (↓)">
+        <ArrowKey dir="down" label={`${t('moveDown')} (↓)`}>
           <ChevronDown />
         </ArrowKey>
-        <ArrowKey dir="right" label="Move right (→)">
+        <ArrowKey dir="right" label={`${t('moveRight')} (→)`}>
           <ChevronRight />
         </ArrowKey>
       </div>

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ComponentType, type SVGProps
 import { useSignStore } from '../store/signStore';
 import { useLangStore } from '../store/langStore';
 import { useToolStore, type Tool } from '../store/toolStore';
+import { useTranslation } from '../hooks/useTranslation';
 import { IANASignedLanguages } from '../i18n/ianaLanguages';
 import { signedLanguageName, spokenLanguageName, spokenApiCode, mouthingSupported } from '../i18n/languageNames';
 import { signSvg } from '../lib/sign';
@@ -15,6 +16,7 @@ const byName = (a: { name: string }, b: { name: string }) => a.name.localeCompar
 
 function LanguagePopover() {
   const { signed, spoken, set } = useLangStore();
+  const { t } = useTranslation();
 
   const spokenOptions = useMemo(() => SPOKEN_CODES.map((code) => ({ code, name: spokenLanguageName(code) })).sort(byName), []);
   // Cross-filter: when a spoken language is chosen, only its paired sign languages are offered.
@@ -29,7 +31,7 @@ function LanguagePopover() {
   return (
     <div className="tool-popover">
       <label className="tool-field">
-        <span>Spoken</span>
+        <span>{t('spoken')}</span>
         <select value={spoken} onChange={(e) => set({ spoken: e.target.value, signed: SIGNED_TO_SPOKEN.get(signed) === e.target.value ? signed : '' })}>
           <option value="">—</option>
           {spokenOptions.map(({ code, name }) => (
@@ -40,7 +42,7 @@ function LanguagePopover() {
         </select>
       </label>
       <label className="tool-field">
-        <span>Signed</span>
+        <span>{t('signed')}</span>
         <select value={signed} onChange={(e) => set({ signed: e.target.value, spoken: SIGNED_TO_SPOKEN.get(e.target.value) || spoken })}>
           <option value="">—</option>
           {signedOptions.map(({ code, name }) => (
@@ -51,7 +53,7 @@ function LanguagePopover() {
         </select>
       </label>
       <button type="button" className="tool-clear" onClick={() => set({ signed: '', spoken: '' })}>
-        Clear
+        {t('clear')}
       </button>
     </div>
   );
@@ -64,6 +66,7 @@ function GeneratePopover({ tool, onClose }: { tool: 'fingerspelling' | 'mouthing
   const inputRef = useRef<HTMLInputElement>(null);
   const addSign = useSignStore((s) => s.addSign);
   const { signed, spoken } = useLangStore();
+  const { t } = useTranslation();
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -111,7 +114,7 @@ function GeneratePopover({ tool, onClose }: { tool: 'fingerspelling' | 'mouthing
       <input
         ref={inputRef}
         className="tool-input"
-        placeholder={tool === 'fingerspelling' ? 'Word to fingerspell…' : 'Word to mouth…'}
+        placeholder={tool === 'fingerspelling' ? t('wordToFingerspell') : t('wordToMouth')}
         value={text}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={(e) => {
@@ -123,13 +126,13 @@ function GeneratePopover({ tool, onClose }: { tool: 'fingerspelling' | 'mouthing
       />
       <div className="tool-result">
         {status === 'loading' && <span className="tool-hint">…</span>}
-        {status === 'empty' && <span className="tool-hint">No result</span>}
+        {status === 'empty' && <span className="tool-hint">{t('noResult')}</span>}
         {status === 'idle' && fsw && (
           <button
             type="button"
             className="tool-use"
-            data-tip="Add to canvas"
-            aria-label="Add to canvas"
+            data-tip={t('addToCanvas')}
+            aria-label={t('addToCanvas')}
             onClick={accept}
             dangerouslySetInnerHTML={{ __html: signSvg(fsw) }}
           />
@@ -173,6 +176,7 @@ export function CanvasTooling() {
   const { open, setOpen } = useToolStore();
   const ref = useRef<HTMLDivElement>(null);
   const { signed, spoken } = useLangStore();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!open) return;
@@ -200,14 +204,14 @@ export function CanvasTooling() {
       )}
       {open === 'translate' && (
         <div className="tool-popover">
-          <p className="tool-soon">Coming soon</p>
+          <p className="tool-soon">{t('comingSoon')}</p>
         </div>
       )}
       <div className="tooling-buttons">
-        <ToolButton tool="language" label="Languages" Icon={LanguageIcon} open={open === 'language'} onToggle={() => toggle('language')} />
+        <ToolButton tool="language" label={t('languages')} Icon={LanguageIcon} open={open === 'language'} onToggle={() => toggle('language')} />
         <ToolButton
           tool="fingerspelling"
-          label={signed ? 'Fingerspelling (F)' : 'Fingerspelling — pick a signed language'}
+          label={signed ? `${t('fingerspelling')} (F)` : `${t('fingerspelling')} — ${t('pickSignedLanguage')}`}
           Icon={HandIcon}
           disabled={!signed}
           open={open === 'fingerspelling'}
@@ -217,10 +221,10 @@ export function CanvasTooling() {
           tool="mouthing"
           label={
             !spoken
-              ? 'Mouthing — pick a spoken language'
+              ? `${t('mouthing')} — ${t('pickSpokenLanguage')}`
               : !mouthingSupported(spoken)
-                ? 'Mouthing not available for this language'
-                : 'Mouthing (M)'
+                ? t('mouthingUnavailable')
+                : `${t('mouthing')} (M)`
           }
           Icon={MouthIcon}
           disabled={!spoken || !mouthingSupported(spoken)}
@@ -229,7 +233,7 @@ export function CanvasTooling() {
         />
         <ToolButton
           tool="translate"
-          label={signed || spoken ? 'Translate (T)' : 'Translate'}
+          label={signed || spoken ? `${t('translate')} (T)` : t('translate')}
           Icon={TranslateIcon}
           disabled={!signed && !spoken}
           open={open === 'translate'}

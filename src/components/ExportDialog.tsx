@@ -77,8 +77,8 @@ export function ExportDialog({ dialogRef }: { dialogRef: RefObject<HTMLDialogEle
             <button
               type="button"
               className="export-copy"
-              data-tip={copied ? 'Copied' : 'Copy image'}
-              aria-label="Copy image to clipboard"
+              data-tip={copied ? t('copied') : t('copyImage')}
+              aria-label={t('copyImage')}
               onClick={copy}
             >
               {copied ? <CheckIcon /> : <CopyIcon />}

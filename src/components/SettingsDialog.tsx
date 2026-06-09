@@ -23,7 +23,7 @@ export function SettingsDialog({ dialogRef }: { dialogRef: RefObject<HTMLDialogE
   return (
     <dialog ref={dialogRef} className="settings-dialog">
       <header className="export-header">
-        <h2>Settings</h2>
+        <h2>{t('settings')}</h2>
         <button type="button" className="dialog-close" aria-label={t('cancel')} onClick={() => dialogRef.current?.close()}>
           ✕
         </button>
@@ -51,7 +51,7 @@ export function SettingsDialog({ dialogRef }: { dialogRef: RefObject<HTMLDialogE
           </select>
         </label>
         <div className="more-row">
-          <span>Grid</span>
+          <span>{t('grid')}</span>
           <div className="seg-group">
             <button type="button" className={gridSeg('0')} onClick={() => ui.set({ grid: '0' })}>
               {t('grid0')}
@@ -65,7 +65,7 @@ export function SettingsDialog({ dialogRef }: { dialogRef: RefObject<HTMLDialogE
           </div>
         </div>
         <div className="more-row">
-          <span>Skin</span>
+          <span>{t('skin')}</span>
           <div className="seg-group">
             <button type="button" className={skinSeg('')} onClick={() => ui.set({ skin: '' })}>
               {t('blackOnWhite')}
