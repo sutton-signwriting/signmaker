@@ -3,9 +3,10 @@ import { useSignStore } from '../store/signStore';
 import { useUiStore, type Skin } from '../store/uiStore';
 import { useTranslation } from '../hooks/useTranslation';
 import { useLightDismiss } from '../hooks/useLightDismiss';
-import { languageNames } from '../i18n/translate';
+import { UI_LANGUAGES, languageLabel } from '../i18n';
+import { signedLanguageName } from '../i18n/languageNames';
 import { ALPHABETS } from '../i18n/alphabets';
-import { applyState, share } from '../lib/bridge';
+import { applyState, setUiLang, share } from '../lib/bridge';
 
 const PILL = 'rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm hover:bg-slate-100';
 const PILL_ACTIVE = 'rounded-md border border-slate-800 bg-slate-800 px-3 py-1.5 text-sm text-white';
@@ -15,7 +16,7 @@ export function SettingsDialog({ dialogRef }: { dialogRef: RefObject<HTMLDialogE
   const ui = useUiStore();
   const sign = useSignStore();
   const { t } = useTranslation();
-  const alpha = ALPHABETS.map((code) => ({ code, name: t(`sgn_${code}`) })).sort((a, b) => a.name.localeCompare(b.name));
+  const alpha = ALPHABETS.map((code) => ({ code, name: signedLanguageName(code) })).sort((a, b) => a.name.localeCompare(b.name));
   const gridSeg = (g: string) => (ui.grid === g ? PILL_ACTIVE : PILL);
   const skinSeg = (sk: Skin) => (ui.skin === sk || (sk === '' && !ui.skin) ? PILL_ACTIVE : PILL);
 
@@ -30,10 +31,10 @@ export function SettingsDialog({ dialogRef }: { dialogRef: RefObject<HTMLDialogE
       <div className="more-grid">
         <label className="more-row">
           <span>{t('userInterface')}</span>
-          <select value={ui.ui} onChange={(e) => applyState({ ui: e.target.value })}>
-            {languageNames().map(({ code, name }) => (
-              <option key={code} value={code}>
-                {name}
+          <select value={ui.ui} onChange={(e) => setUiLang(e.target.value)}>
+            {UI_LANGUAGES.map((lang) => (
+              <option key={lang.code} value={lang.code}>
+                {languageLabel(lang)}
               </option>
             ))}
           </select>

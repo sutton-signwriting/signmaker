@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
-import { useUiStore } from '../store/uiStore';
+import { useI18nStore } from '../store/i18nStore';
 import { buildTranslator, type Translator } from '../i18n/translate';
 
 export function useTranslation(): Translator {
-  const ui = useUiStore((s) => s.ui);
-  return useMemo(() => buildTranslator(ui), [ui]);
+  const dict = useI18nStore((s) => s.dict);
+  return useMemo(() => buildTranslator(dict), [dict]);
 }

@@ -1,8 +1,29 @@
 import { useSignStore } from '../store/signStore';
 import { useUiStore, UI_DEFAULTS, type Skin, type Tab, type UiState } from '../store/uiStore';
+import { useI18nStore } from '../store/i18nStore';
 import { parseHash, pushHash } from './url';
 
 export const isIframe = typeof window !== 'undefined' && window.location !== window.parent.location;
+
+const UI_LANG_KEY = 'signmaker-ui';
+
+export function storedUiLang(): string | null {
+  try {
+    return localStorage.getItem(UI_LANG_KEY);
+  } catch {
+    return null;
+  }
+}
+
+/** Change UI language from a user action: persist the choice, then apply it. */
+export function setUiLang(code: string): void {
+  try {
+    localStorage.setItem(UI_LANG_KEY, code);
+  } catch {
+    /* ignore persistence errors */
+  }
+  applyState({ ui: code });
+}
 
 /** Apply an incoming state object (URL hash, postMessage, or demo controls) — port of legacy setS. */
 export function applyState(obj: Record<string, unknown>): void {
@@ -13,6 +34,7 @@ export function applyState(obj: Record<string, unknown>): void {
     switch (key) {
       case 'ui':
         patch.ui = value || 'en';
+        useI18nStore.getState().setLang(patch.ui);
         break;
       case 'alphabet':
         patch.alphabet = value;
