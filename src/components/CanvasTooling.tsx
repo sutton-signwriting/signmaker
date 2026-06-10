@@ -8,8 +8,19 @@ import { signedLanguageName, spokenLanguageName, spokenApiCode, mouthingSupporte
 import { signSvg } from '../lib/sign';
 import { LanguageIcon, HandIcon, MouthIcon, TranslateIcon } from './icons';
 
-const API = 'https://signwriting-sxie2r74ua-uc.a.run.app';
+const API = 'https://signwriting.nagish.io';
 const DEBOUNCE_MS = 300;
+
+// Ping /health the first time fingerspelling/mouthing opens: confirms the server is up and
+// warms the machine so the first real request isn't slow. Retries on a future open if it fails.
+let warmed = false;
+function warmUp(): void {
+  if (warmed) return;
+  warmed = true;
+  fetch(`${API}/health`).catch(() => {
+    warmed = false;
+  });
+}
 const SPOKEN_CODES = [...new Set(IANASignedLanguages.map((l) => l.spoken).filter(Boolean))];
 const SIGNED_TO_SPOKEN = new Map(IANASignedLanguages.map((l) => [l.signed, l.spoken]));
 const byName = (a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name);
@@ -70,6 +81,7 @@ function GeneratePopover({ tool, onClose }: { tool: 'fingerspelling' | 'mouthing
 
   useEffect(() => {
     inputRef.current?.focus();
+    warmUp();
   }, []);
 
   useEffect(() => {
