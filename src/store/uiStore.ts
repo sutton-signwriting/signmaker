@@ -11,6 +11,8 @@ export interface UiState {
   grid: '0' | '1' | '2';
   skin: Skin;
   tab: Tab;
+  /** Mobile only: whether the palette overlay drawer is open. */
+  paletteOpen: boolean;
 
   size: string;
   pad: string;
@@ -32,6 +34,7 @@ export const useUiStore = create<UiState>((set) => ({
   grid: '1',
   skin: '',
   tab: '',
+  paletteOpen: false,
 
   size: '1',
   pad: '0',

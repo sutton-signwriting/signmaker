@@ -96,6 +96,13 @@ html,body {
   transform: translateZ(0);
 }
 
+/* Draggable elements: stop touch browsers from turning the drag into a scroll (pointercancel). */
+.signbox-symbol,
+.palette-grid .row button,
+#sequence .sort {
+  touch-action: none;
+}
+
 /* While a symbol is being dragged, drop its cell chrome so only the glyph follows the pointer. */
 .dragging {
   border-color: transparent !important;
@@ -136,10 +143,36 @@ html,body {
   background: darkgray;
 }
 
+/* Sequence cells: each stays exactly 5% tall with no gaps because drop slots are
+   computed as floor(clientY / (innerHeight / 20)) — the card look is painted by an
+   inset ::before so the hit geometry never moves. */
 .sort{
+  position: relative;
   width: 100%;
   height: 5%;
-  border: 1px solid black;
+}
+.sort::before {
+  content: '';
+  position: absolute;
+  inset: 2px 4px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+}
+.sort:empty::before {
+  border-style: dashed;
+  border-color: #cbd5e1;
+  background: transparent;
+}
+.sort:not(:empty), .sort:not(:empty) svg {
+  cursor: grab;
+}
+.sort:not(:empty):hover::before {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+}
+.sort svg {
+  position: relative;
 }
 
 .btn {
@@ -282,6 +315,9 @@ html,body {
 }
 .palette-save {
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   border: none;
   border-radius: 0.375rem;
   background: #1e293b;
@@ -293,6 +329,34 @@ html,body {
 }
 .palette-save:hover {
   background: #334155;
+}
+.palette-save svg {
+  width: 1.1em;
+  height: 1.1em;
+}
+
+/* Save shortcut at the top of the sequence rail — only while the palette
+   (which holds the regular Save button) is folded away as the mobile drawer. */
+.seq-save {
+  display: none;
+}
+@media (max-width: 600px) {
+  .seq-save {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: calc(100% - 8px);
+    height: 40px;
+    margin: 4px;
+    border: none;
+    border-radius: 0.5rem;
+    background: #1e293b;
+    color: #fff;
+    cursor: pointer;
+  }
+  .seq-save:hover {
+    background: #334155;
+  }
 }
 .palette-crumbs {
   flex: 1;
@@ -420,16 +484,18 @@ html,body {
 
 #sequence {
   float: right;
-  width: 10%;
+  width: 48px;
   height: 100%;
-  border: 1px solid black;
+  border-left: 1px solid #cbd5e1;
+  background: #f8fafc;
 }
 #signbox {
   float: left;
-  width: 90%;
+  width: calc(100% - 48px);
   height: 100%;
   overflow: hidden;
   position: relative;
+  container-type: inline-size;
 }
 
 /* Valid SignWriting placement region (symbol coordinates 250–749). */
@@ -498,6 +564,21 @@ html,body {
 .canvas-btn:hover:not(:disabled) { background: #fff; color: #0f172a; border-color: #94a3b8; }
 .canvas-btn:disabled { opacity: 0.35; cursor: default; }
 .canvas-divider { width: 1px; height: 22px; background: #cbd5e1; margin: 0 2px; }
+
+/* When the signbox itself is too narrow for the corner clusters side by side in one
+   row (regardless of why — small screen or desktop split), fold them into grids
+   (left 4+4, right 2+2) and let the rows take over the dividers' job. */
+@container (max-width: 520px) {
+  .canvas-tools-left,
+  .canvas-tools-right {
+    display: grid;
+    gap: 4px;
+  }
+  .canvas-tools-left { grid-template-columns: repeat(4, 34px); }
+  .canvas-tools-right { grid-template-columns: repeat(2, 34px); }
+  .canvas-tools-left .canvas-divider,
+  .canvas-tools-right .canvas-divider { display: none; }
+}
 
 /* Keyboard-triggered "as if pressed" flash for any control button. */
 .is-pressed {
@@ -908,9 +989,25 @@ body.inverse .btn {
   border: 1px solid white;
 }
 
-body.inverse .cmd, body.inverse .cmdrow, body.inverse .cmdfull, body.inverse .cmdlong, body.inverse .cmdslim, body.inverse .cmdhalf, body.inverse .cmd.selected, body.inverse #dictionary, body.inverse #sequence {
+body.inverse .cmd, body.inverse .cmdrow, body.inverse .cmdfull, body.inverse .cmdlong, body.inverse .cmdslim, body.inverse .cmdhalf, body.inverse .cmd.selected, body.inverse #dictionary {
   border: 1px solid white;
   background: black;
+}
+body.inverse #sequence {
+  border-left-color: #334155;
+  background: #000;
+}
+body.inverse .sort::before {
+  border-color: #334155;
+  background: #000;
+}
+body.inverse .sort:empty::before {
+  border-color: #475569;
+  background: transparent;
+}
+body.inverse .sort:not(:empty):hover::before {
+  background: #1e293b;
+  border-color: #64748b;
 }
 body.inverse .cmd.unselected {
   background: black;
@@ -949,7 +1046,7 @@ body.inverse #header p, body.inverse select, body.inverse input, body.inverse .b
 body.inverse .checked, body.inverse .checked p {
     background-color:darkgray;
 }
-body.inverse .row button, body.inverse .sort {
+body.inverse .row button {
   border: 1px solid white;
 }
 
@@ -1044,5 +1141,66 @@ svg g text {
   .tool-popover {
     transform: none;
     transition-duration: 0.05s;
+  }
+}
+
+/* Mobile: the canvas takes the full width and the palette becomes an overlay
+   drawer on the right edge, opened from an edge tab and collapsed as soon as a
+   symbol drag starts so the canvas is exposed for the drop. */
+.palette-toggle,
+.palette-scrim {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  #signmaker {
+    width: 100%;
+  }
+
+  #palette {
+    margin-left: 0;
+    left: auto;
+    right: 0;
+    width: min(85vw, 340px);
+    border-left: 1px solid #cbd5e1;
+    box-shadow: -4px 0 16px rgb(0 0 0 / 0.15);
+    transform: translateX(100%);
+    z-index: 30;
+  }
+  #palette.open {
+    transform: none;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    #palette {
+      transition: transform 0.2s ease;
+    }
+  }
+
+  .palette-scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 29;
+    background: rgb(0 0 0 / 0.25);
+  }
+
+  .palette-toggle {
+    display: flex;
+    align-items: center;
+    position: fixed;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    z-index: 28;
+    padding: 0.75rem 0.25rem;
+    border: 1px solid #cbd5e1;
+    border-right: none;
+    border-radius: 0.5rem 0 0 0.5rem;
+    background: #fff;
+    cursor: pointer;
+  }
+  .palette-toggle svg {
+    width: 1.25rem;
+    height: 1.25rem;
   }
 }

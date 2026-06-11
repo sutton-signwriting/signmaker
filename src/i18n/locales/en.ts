@@ -18,6 +18,7 @@ const en: Messages = {
   fillNext: 'Fill +',
   top: 'Top',
   save: 'Save',
+  symbols: 'Symbols',
   download: 'Download',
   pngImage: 'PNG Image',
   svgImage: 'SVG Image',

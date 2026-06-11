@@ -45,6 +45,7 @@ export function useDrag(handlers: DragHandlers): (e: ReactPointerEvent) => void 
       const s = state.current;
       window.removeEventListener('pointermove', move);
       window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', up);
       state.current = null;
       if (!s) return;
       if (handlers.ghost) {
@@ -62,6 +63,9 @@ export function useDrag(handlers: DragHandlers): (e: ReactPointerEvent) => void 
 
     window.addEventListener('pointermove', move);
     window.addEventListener('pointerup', up);
+    // Touch browsers fire pointercancel when they reclaim the gesture (e.g. for scrolling);
+    // treat it as a drop so listeners and ghosts don't leak.
+    window.addEventListener('pointercancel', up);
   };
 
   return onPointerDown;
@@ -75,5 +79,10 @@ export function pointInElement(id: string, clientX: number, clientY: number): bo
   return clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom;
 }
 
-/** The sequence column has 20 vertical drop slots — which one is the pointer over. */
-export const seqPosition = (clientY: number): number => Math.floor(clientY / (window.innerHeight / 20));
+/** The sequence column has 20 vertical drop slots — which one is the pointer over.
+ *  Slots start below the mobile save button; offsetTop (unlike getBoundingClientRect)
+ *  ignores the translate applied to an item mid-drag. */
+export const seqPosition = (clientY: number): number => {
+  const first = document.querySelector<HTMLElement>('#sequence .sort');
+  return Math.max(0, Math.floor((clientY - (first?.offsetTop ?? 0)) / (window.innerHeight / 20)));
+};

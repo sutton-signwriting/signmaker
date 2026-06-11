@@ -1,12 +1,13 @@
 import { memo, useRef } from 'react';
 import { usePaletteStore } from '../store/paletteStore';
 import { useSignStore } from '../store/signStore';
+import { useUiStore } from '../store/uiStore';
 import { useTranslation } from '../hooks/useTranslation';
 import { useDrag, pointInElement, seqPosition } from '../hooks/useDrag';
 import { save } from '../lib/bridge';
 import { SYMBOL_NAMES } from '../i18n/symbolNames';
 import { symbolSvg, symbolSize, mirror as mirrorKey } from '../lib/sign';
-import { HomeIcon } from './icons';
+import { HomeIcon, SaveIcon } from './icons';
 
 /** A full-size symbol that follows the cursor, centered, while dragging from the palette. */
 function makeGhost(symbolKey: string): HTMLDivElement {
@@ -32,7 +33,10 @@ const PaletteCell = memo(function PaletteCell({ symbolKey, tooltip }: { symbolKe
 
   const onPointerDown = useDrag({
     onMove: ({ clientX, clientY, moved }) => {
-      if (symbolKey && moved) positionGhost(clientX, clientY);
+      if (!symbolKey || !moved) return;
+      // First dragging move: collapse the mobile palette drawer so the canvas is exposed for the drop.
+      if (!ghost.current) useUiStore.getState().set({ paletteOpen: false });
+      positionGhost(clientX, clientY);
     },
     onEnd: ({ clientX, clientY, moved }) => {
       ghost.current?.remove();
@@ -112,6 +116,7 @@ export function Palette() {
           )}
         </nav>
         <button type="button" className="palette-save" onClick={save}>
+          <SaveIcon />
           {t('save')}
         </button>
       </header>

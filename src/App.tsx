@@ -5,14 +5,19 @@ import { useUiStore } from './store/uiStore';
 import { useSignStore } from './store/signStore';
 import { usePaletteStore } from './store/paletteStore';
 import { useKeyboard } from './hooks/useKeyboard';
+import { useTranslation } from './hooks/useTranslation';
+import { ChevronLeft } from './components/icons';
 import { loadAlphabet } from './lib/alphabet';
 import { isIframe, currentParams } from './lib/bridge';
 import { pushHash } from './lib/url';
 
 export function App() {
   useKeyboard();
+  const { t } = useTranslation();
   const skin = useUiStore((s) => s.skin);
   const alphabet = useUiStore((s) => s.alphabet);
+  const paletteOpen = useUiStore((s) => s.paletteOpen);
+  const set = useUiStore((s) => s.set);
 
   useEffect(() => {
     document.body.className = skin;
@@ -40,7 +45,18 @@ export function App() {
   return (
     <>
       <SignMaker />
-      <div id="palette">
+      {paletteOpen && <div className="palette-scrim" onClick={() => set({ paletteOpen: false })} />}
+      <button
+        type="button"
+        className="palette-toggle"
+        aria-label={t('symbols')}
+        aria-expanded={paletteOpen}
+        aria-controls="palette"
+        onClick={() => set({ paletteOpen: true })}
+      >
+        <ChevronLeft />
+      </button>
+      <div id="palette" className={paletteOpen ? 'open' : ''}>
         <Palette />
       </div>
     </>

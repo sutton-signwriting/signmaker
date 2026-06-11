@@ -20,6 +20,7 @@ export interface Messages {
   fillNext: string;
   top: string;
   save: string;
+  symbols: string;
   download: string;
   pngImage: string;
   svgImage: string;
