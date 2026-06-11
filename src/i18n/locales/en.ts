@@ -55,7 +55,7 @@ const en: Messages = {
   pickSignedLanguage: 'pick a signed language',
   pickSpokenLanguage: 'pick a spoken language',
   mouthingUnavailable: 'Mouthing not available for this language',
-  comingSoon: 'Coming soon',
+  textToTranslate: 'Text to translate…',
   addToCanvas: 'Add to canvas',
   noResult: 'No result',
   wordToFingerspell: 'Word to fingerspell…',

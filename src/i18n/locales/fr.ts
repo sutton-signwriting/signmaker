@@ -54,7 +54,7 @@ const fr: Partial<Messages> = {
   pickSignedLanguage: 'choisir une langue des signes',
   pickSpokenLanguage: 'choisir une langue parlée',
   mouthingUnavailable: 'Labialisation indisponible pour cette langue',
-  comingSoon: 'Bientôt disponible',
+  textToTranslate: 'Texte à traduire…',
   addToCanvas: 'Ajouter au canevas',
   noResult: 'Aucun résultat',
   wordToFingerspell: 'Mot à épeler…',

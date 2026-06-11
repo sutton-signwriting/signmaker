@@ -54,7 +54,7 @@ const de: Partial<Messages> = {
   pickSignedLanguage: 'Gebärdensprache wählen',
   pickSpokenLanguage: 'Lautsprache wählen',
   mouthingUnavailable: 'Mundbild für diese Sprache nicht verfügbar',
-  comingSoon: 'Demnächst verfügbar',
+  textToTranslate: 'Text zum Übersetzen…',
   addToCanvas: 'Zur Leinwand hinzufügen',
   noResult: 'Kein Ergebnis',
   wordToFingerspell: 'Wort zum Fingern…',

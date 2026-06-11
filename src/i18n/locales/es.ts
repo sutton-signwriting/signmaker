@@ -54,7 +54,7 @@ const es: Partial<Messages> = {
   pickSignedLanguage: 'elige una lengua de señas',
   pickSpokenLanguage: 'elige una lengua hablada',
   mouthingUnavailable: 'Articulación no disponible para este idioma',
-  comingSoon: 'Próximamente',
+  textToTranslate: 'Texto a traducir…',
   addToCanvas: 'Añadir al lienzo',
   noResult: 'Sin resultados',
   wordToFingerspell: 'Palabra para deletrear…',

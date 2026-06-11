@@ -54,7 +54,7 @@ const ru: Partial<Messages> = {
   pickSignedLanguage: 'выберите жестовый язык',
   pickSpokenLanguage: 'выберите устный язык',
   mouthingUnavailable: 'Артикуляция недоступна для этого языка',
-  comingSoon: 'Скоро',
+  textToTranslate: 'Текст для перевода…',
   addToCanvas: 'Добавить на холст',
   noResult: 'Нет результатов',
   wordToFingerspell: 'Слово для дактилологии…',

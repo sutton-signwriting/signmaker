@@ -5,20 +5,23 @@ import { useToolStore, type Tool } from '../store/toolStore';
 import { useTranslation } from '../hooks/useTranslation';
 import { IANASignedLanguages } from '../i18n/ianaLanguages';
 import { signedLanguageName, spokenLanguageName, spokenApiCode, mouthingSupported } from '../i18n/languageNames';
-import { signSvg } from '../lib/sign';
+import { signSvg, signNormalize } from '../lib/sign';
+import { recaptchaToken } from '../lib/recaptcha';
+import { apiDomain } from '../lib/api';
 import { LanguageIcon, HandIcon, MouthIcon, TranslateIcon } from './icons';
 
-const API = 'https://signwriting.nagish.io';
+const API = `https://signwriting.${apiDomain}`;
+const TRANSLATE_API = `https://sw-translation.${apiDomain}`;
 const DEBOUNCE_MS = 300;
 
-// Ping /health the first time fingerspelling/mouthing opens: confirms the server is up and
-// warms the machine so the first real request isn't slow. Retries on a future open if it fails.
-let warmed = false;
-function warmUp(): void {
-  if (warmed) return;
-  warmed = true;
-  fetch(`${API}/health`).catch(() => {
-    warmed = false;
+// Ping /health the first time a tool opens: confirms the server is up and warms
+// the machine so the first real request isn't slow. Retries on a future open if it fails.
+const warmed = new Set<string>();
+function warmUp(api: string): void {
+  if (warmed.has(api)) return;
+  warmed.add(api);
+  fetch(`${api}/health`).catch(() => {
+    warmed.delete(api);
   });
 }
 const SPOKEN_CODES = [...new Set(IANASignedLanguages.map((l) => l.spoken).filter(Boolean))];
@@ -70,7 +73,31 @@ function LanguagePopover() {
   );
 }
 
-function GeneratePopover({ tool, onClose }: { tool: 'fingerspelling' | 'mouthing'; onClose: () => void }) {
+async function generateFsw(tool: 'fingerspelling' | 'mouthing' | 'translate', text: string, signed: string, spoken: string, signal: AbortSignal): Promise<string> {
+  if (tool === 'translate') {
+    const token = await recaptchaToken('api_request');
+    const res = await fetch(`${TRANSLATE_API}/`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-recaptcha-token': token },
+      body: JSON.stringify({ texts: [text], spoken_language: spoken, signed_language: signed }),
+      signal,
+    });
+    const data = (await res.json()) as { output?: string[] };
+    const fsw = data.output?.[0] || '';
+    // The model emits a placeholder M500x500 box; recompute it from the actual
+    // glyph extents so the svg (and addSign placement) get the real size.
+    return fsw && signNormalize(fsw);
+  }
+  const url =
+    tool === 'fingerspelling'
+      ? `${API}/fingerspelling?text=${encodeURIComponent(text)}&signed_language=${signed}`
+      : `${API}/mouthing?text=${encodeURIComponent(text)}&spoken_language=${spokenApiCode(spoken)}`;
+  const res = await fetch(url, { signal });
+  const data = (await res.json()) as { fsw?: string };
+  return data.fsw || '';
+}
+
+function GeneratePopover({ tool, onClose }: { tool: 'fingerspelling' | 'mouthing' | 'translate'; onClose: () => void }) {
   const [text, setText] = useState('');
   const [fsw, setFsw] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'empty'>('idle');
@@ -81,11 +108,13 @@ function GeneratePopover({ tool, onClose }: { tool: 'fingerspelling' | 'mouthing
 
   useEffect(() => {
     inputRef.current?.focus();
-    warmUp();
-  }, []);
+    warmUp(tool === 'translate' ? TRANSLATE_API : API);
+  }, [tool]);
 
+  // Keyed on the trimmed text so whitespace-only edits don't abort and re-fire the request.
+  const trimmed = text.trim();
   useEffect(() => {
-    if (!text.trim()) {
+    if (!trimmed) {
       setFsw('');
       setStatus('idle');
       return;
@@ -93,15 +122,10 @@ function GeneratePopover({ tool, onClose }: { tool: 'fingerspelling' | 'mouthing
     const controller = new AbortController();
     const timer = setTimeout(async () => {
       setStatus('loading');
-      const url =
-        tool === 'fingerspelling'
-          ? `${API}/fingerspelling?text=${encodeURIComponent(text)}&signed_language=${signed}`
-          : `${API}/mouthing?text=${encodeURIComponent(text)}&spoken_language=${spokenApiCode(spoken)}`;
       try {
-        const res = await fetch(url, { signal: controller.signal });
-        const data = (await res.json()) as { fsw?: string };
-        setFsw(data.fsw || '');
-        setStatus(data.fsw ? 'idle' : 'empty');
+        const result = await generateFsw(tool, trimmed, signed, spoken, controller.signal);
+        setFsw(result);
+        setStatus(result ? 'idle' : 'empty');
       } catch {
         if (!controller.signal.aborted) {
           setFsw('');
@@ -113,7 +137,7 @@ function GeneratePopover({ tool, onClose }: { tool: 'fingerspelling' | 'mouthing
       clearTimeout(timer);
       controller.abort();
     };
-  }, [text, tool, signed, spoken]);
+  }, [trimmed, tool, signed, spoken]);
 
   const accept = () => {
     if (!fsw) return;
@@ -126,7 +150,7 @@ function GeneratePopover({ tool, onClose }: { tool: 'fingerspelling' | 'mouthing
       <input
         ref={inputRef}
         className="tool-input"
-        placeholder={tool === 'fingerspelling' ? t('wordToFingerspell') : t('wordToMouth')}
+        placeholder={tool === 'fingerspelling' ? t('wordToFingerspell') : tool === 'mouthing' ? t('wordToMouth') : t('textToTranslate')}
         value={text}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={(e) => {
@@ -211,13 +235,8 @@ export function CanvasTooling() {
   return (
     <div className="canvas-tooling" ref={ref}>
       {open === 'language' && <LanguagePopover />}
-      {(open === 'fingerspelling' || open === 'mouthing') && (
+      {(open === 'fingerspelling' || open === 'mouthing' || open === 'translate') && (
         <GeneratePopover tool={open} onClose={() => setOpen(null)} />
-      )}
-      {open === 'translate' && (
-        <div className="tool-popover">
-          <p className="tool-soon">{t('comingSoon')}</p>
-        </div>
       )}
       <div className="tooling-buttons">
         <ToolButton tool="language" label={t('languages')} Icon={LanguageIcon} open={open === 'language'} onToggle={() => toggle('language')} />
@@ -245,9 +264,15 @@ export function CanvasTooling() {
         />
         <ToolButton
           tool="translate"
-          label={signed || spoken ? `${t('translate')} (T)` : t('translate')}
+          label={
+            !spoken
+              ? `${t('translate')} — ${t('pickSpokenLanguage')}`
+              : !signed
+                ? `${t('translate')} — ${t('pickSignedLanguage')}`
+                : `${t('translate')} (T)`
+          }
           Icon={TranslateIcon}
-          disabled={!signed && !spoken}
+          disabled={!signed || !spoken}
           open={open === 'translate'}
           onToggle={() => toggle('translate')}
         />

@@ -100,7 +100,7 @@ const ACTIONS: { name: string; tool: string | null; run: (s: Store, ui: Ui) => v
     tool: null,
     run: () => {
       const { signed, spoken } = useLangStore.getState();
-      if (signed || spoken) useToolStore.getState().setOpen('translate');
+      if (signed && spoken) useToolStore.getState().setOpen('translate');
     },
   },
 ];

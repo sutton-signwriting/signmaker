@@ -54,7 +54,7 @@ const ar: Partial<Messages> = {
   pickSignedLanguage: 'اختر لغة إشارة',
   pickSpokenLanguage: 'اختر لغة منطوقة',
   mouthingUnavailable: 'حركة الفم غير متوفرة لهذه اللغة',
-  comingSoon: 'قريبًا',
+  textToTranslate: 'نص للترجمة…',
   addToCanvas: 'إضافة إلى اللوحة',
   noResult: 'لا نتائج',
   wordToFingerspell: 'كلمة للتهجئة…',

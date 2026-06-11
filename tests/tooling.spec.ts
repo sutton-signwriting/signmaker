@@ -32,11 +32,29 @@ test.describe('language tooling', () => {
     expect(names).not.toContain('French Sign Language');
   });
 
-  test('translate shows a coming-soon message', async ({ page }) => {
+  test('translate renders a sign and adds it to the canvas', async ({ page }) => {
+    await page.route('**/recaptcha/enterprise.js*', (route) =>
+      route.fulfill({
+        contentType: 'application/javascript',
+        body: 'window.grecaptcha = { enterprise: { ready: (cb) => cb(), execute: () => Promise.resolve("test-token") } };',
+      }),
+    );
+    let recaptchaToken = '';
+    await page.route('https://sw-translation.nagish.io/**', (route) => {
+      if (route.request().method() !== 'POST') return route.fulfill({ json: { status: 'ok' } });
+      recaptchaToken = route.request().headers()['x-recaptcha-token'];
+      return route.fulfill({ json: { input: ['hello'], output: ['M518x529S14c20481x471S27106503x489'] } });
+    });
+
     await page.locator('[data-tool=language]').click();
     await page.locator('.tool-field select').nth(1).selectOption('ase');
     await page.keyboard.press('Escape');
+
     await page.locator('[data-tool=translate]').click();
-    await expect(page.locator('.tool-soon')).toHaveText('Coming soon');
+    await page.locator('.tool-input').fill('hello');
+    await page.locator('.tool-use').click();
+
+    expect(recaptchaToken).toBe('test-token');
+    await expect(page.locator('#signbox .signbox-symbol')).toHaveCount(2);
   });
 });

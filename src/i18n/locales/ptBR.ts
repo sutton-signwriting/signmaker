@@ -54,7 +54,7 @@ const ptBR: Partial<Messages> = {
   pickSignedLanguage: 'escolha uma língua de sinais',
   pickSpokenLanguage: 'escolha uma língua falada',
   mouthingUnavailable: 'Articulação labial indisponível para este idioma',
-  comingSoon: 'Em breve',
+  textToTranslate: 'Texto para traduzir…',
   addToCanvas: 'Adicionar à tela',
   noResult: 'Sem resultados',
   wordToFingerspell: 'Palavra para soletrar…',

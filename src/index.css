@@ -686,7 +686,6 @@ html,body {
 }
 .tool-clear:hover { background: #f1f5f9; }
 .tool-hint { color: #94a3b8; font-size: 0.85rem; }
-.tool-soon { margin: 0; padding: 1rem; text-align: center; color: #64748b; }
 
 .confirm-dialog {
   margin: auto; /* restore the modal centering Tailwind's preflight margin reset removes */

@@ -54,7 +54,7 @@ const no: Partial<Messages> = {
   pickSignedLanguage: 'velg et tegnspråk',
   pickSpokenLanguage: 'velg et talespråk',
   mouthingUnavailable: 'Munnstilling er ikke tilgjengelig for dette språket',
-  comingSoon: 'Kommer snart',
+  textToTranslate: 'Tekst å oversette…',
   addToCanvas: 'Legg til på lerretet',
   noResult: 'Ingen treff',
   wordToFingerspell: 'Ord å fingerstave…',

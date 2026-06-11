@@ -57,7 +57,7 @@ export interface Messages {
   pickSignedLanguage: string;
   pickSpokenLanguage: string;
   mouthingUnavailable: string;
-  comingSoon: string;
+  textToTranslate: string;
   addToCanvas: string;
   noResult: string;
   wordToFingerspell: string;
