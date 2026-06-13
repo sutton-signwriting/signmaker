@@ -2,18 +2,15 @@ import { test, expect } from '@playwright/test';
 import { waitForApp } from './support';
 
 test.describe('UI internationalization', () => {
-  test.skip(({ browserName }) => browserName !== 'chromium', 'modern-only feature');
-
   test('?ui= translates the interface', async ({ page }, testInfo) => {
-    test.skip(testInfo.project.name === 'legacy', 'lazy-loaded locales are a rewrite-only feature');
+    test.skip(testInfo.project.name === 'webkit', 'locale chunks are only exercised in chromium CI');
     await page.goto('/index.html#?ui=de');
     await waitForApp(page);
     await page.locator('#tool-settings').click();
     await expect(page.locator('.more-row span').first()).toHaveText('Benutzeroberfläche');
   });
 
-  test('language picker shows "English name - Native name"', async ({ page }, testInfo) => {
-    test.skip(testInfo.project.name === 'legacy', 'lazy-loaded locales are a rewrite-only feature');
+  test('language picker shows "English name - Native name"', async ({ page }) => {
     await page.goto('/index.html');
     await waitForApp(page);
     await page.locator('#tool-settings').click();
@@ -24,7 +21,7 @@ test.describe('UI internationalization', () => {
   });
 
   test('chosen language is saved and restored across reloads', async ({ page }, testInfo) => {
-    test.skip(testInfo.project.name === 'legacy', 'lazy-loaded locales are a rewrite-only feature');
+    test.skip(testInfo.project.name === 'webkit', 'localStorage persistence is covered in chromium CI');
     await page.goto('/index.html');
     await waitForApp(page);
     await page.locator('#tool-settings').click();

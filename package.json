@@ -1,16 +1,36 @@
 {
-  "name": "signmaker",
+  "name": "@sutton-signwriting/signmaker",
   "private": true,
   "version": "2.0.0",
   "type": "module",
-  "description": "Modern editor for Formal SignWriting in ASCII (FSW) and SignWriting in Unicode (SWU)",
+  "description": "Create and edit signs using Formal SignWriting in ASCII (FSW) or SignWriting in Unicode (SWU)",
   "license": "MIT",
+  "author": {
+    "name": "Steve Slevinski",
+    "email": "slevinski@signwriting.org",
+    "url": "https://steve.signwriting.org"
+  },
+  "homepage": "https://sutton-signwriting.github.io/signmaker/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sutton-signwriting/signmaker.git"
+  },
+  "bugs": "https://github.com/sutton-signwriting/signmaker/issues",
+  "keywords": [
+    "SignWriting",
+    "editor",
+    "sign language",
+    "signmaker",
+    "fsw",
+    "swu"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:pages": "npm run build -- --base=/signmaker/",
+    "build:package": "npm run build -- --base=./",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "serve:legacy": "serve legacy -l 4983 --no-clipboard",
     "test": "playwright test"
   },
   "dependencies": {
@@ -28,7 +48,6 @@
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.2",
-    "serve": "^14.2.6",
     "tailwindcss": "^4.3.0",
     "typescript": "^6.0.3",
     "vite": "^8.0.16"

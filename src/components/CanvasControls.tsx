@@ -1,5 +1,6 @@
-import { useRef, type ComponentType, type PointerEvent, type ReactNode, type SVGProps } from 'react';
+import { useEffect, useRef, type ComponentType, type PointerEvent, type ReactNode, type SVGProps } from 'react';
 import { useSignStore } from '../store/signStore';
+import { useUiStore } from '../store/uiStore';
 import { useTranslation } from '../hooks/useTranslation';
 import { startMove, stopMove, type Direction } from '../lib/arrowRepeat';
 import { tip, HINTS } from '../lib/shortcuts';
@@ -123,7 +124,13 @@ export function CanvasControls() {
   const confirmRef = useRef<HTMLDialogElement>(null);
   const settingsRef = useRef<HTMLDialogElement>(null);
   const exportRef = useRef<HTMLDialogElement>(null);
+  const tab = useUiStore((ui) => ui.tab);
   useLightDismiss(confirmRef);
+
+  useEffect(() => {
+    if (tab === 'more') settingsRef.current?.showModal();
+    if (tab === 'png' || tab === 'svg') exportRef.current?.showModal();
+  }, [tab]);
 
   return (
     <>

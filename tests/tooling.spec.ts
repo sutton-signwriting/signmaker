@@ -2,8 +2,7 @@ import { test, expect } from '@playwright/test';
 import { waitForApp } from './support';
 
 test.describe('language tooling', () => {
-  test.beforeEach(async ({ page }, testInfo) => {
-    test.skip(testInfo.project.name === 'legacy', 'fingerspelling/mouthing tooling is a modern-only feature');
+  test.beforeEach(async ({ page }) => {
     await page.goto('/index.html');
     await page.evaluate(() => localStorage.removeItem('signmaker-languages'));
     await page.reload();
@@ -48,7 +47,7 @@ test.describe('language tooling', () => {
 
     await page.locator('[data-tool=language]').click();
     await page.locator('.tool-field select').nth(1).selectOption('ase');
-    await page.keyboard.press('Escape');
+    await page.locator('[data-tool=language]').click();
 
     await page.locator('[data-tool=translate]').click();
     await page.locator('.tool-input').fill('hello');

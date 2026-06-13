@@ -1,4 +1,4 @@
-import { useState, type RefObject } from 'react';
+import { useEffect, useState, type RefObject } from 'react';
 import { useSignStore } from '../store/signStore';
 import { useUiStore } from '../store/uiStore';
 import { useTranslation } from '../hooks/useTranslation';
@@ -37,6 +37,10 @@ export function ExportDialog({ dialogRef }: { dialogRef: RefObject<HTMLDialogEle
   const [format, setFormat] = useState<Format>('png');
   const [copied, setCopied] = useState(false);
   useLightDismiss(dialogRef);
+
+  useEffect(() => {
+    if (ui.tab === 'png' || ui.tab === 'svg') setFormat(ui.tab);
+  }, [ui.tab]);
 
   const styled = withStyle(fswnorm, ui);
   const seg = (active: boolean) =>

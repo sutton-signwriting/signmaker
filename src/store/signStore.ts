@@ -202,21 +202,19 @@ export const useSignStore = create<SignState>((set, get) => ({
     const list = get().list;
     const selected = list.filter((s) => s.selected);
     if (!selected.length) return;
-    // Reflect each selected symbol's position across the selection's horizontal center,
-    // so a multi-symbol selection mirrors as a group (a single symbol just flips in place).
+    // Reflect selected anchors across the selection's horizontal anchor center. Using anchors
+    // rather than glyph extents keeps mirror self-inverse even when mirrored glyph widths differ.
     let minX = Infinity;
     let maxX = -Infinity;
     for (const s of selected) {
-      const [w] = sign.symbolSize(s.key);
       minX = Math.min(minX, s.x);
-      maxX = Math.max(maxX, s.x + w);
+      maxX = Math.max(maxX, s.x);
     }
     set({
       list: list.map((s) => {
         if (!s.selected) return s;
         const key = sign.mirror(s.key);
-        const [w] = sign.symbolSize(s.key);
-        return { ...s, key, ...clampPos(key, minX + maxX - s.x - w, s.y) };
+        return { ...s, key, ...clampPos(key, minX + maxX - s.x, s.y) };
       }),
     });
     get().addhistory();

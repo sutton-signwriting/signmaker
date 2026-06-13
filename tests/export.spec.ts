@@ -2,8 +2,7 @@ import { test, expect } from '@playwright/test';
 import { waitForApp, SIGNS } from './support';
 
 test.describe('PNG/SVG export', () => {
-  test('downloads a real, sized PNG (not a 1x1 blank)', async ({ page }, testInfo) => {
-    test.skip(testInfo.project.name === 'legacy', 'modern export dialog is a rewrite-only feature');
+  test('downloads a real, sized PNG (not a 1x1 blank)', async ({ page }) => {
     await page.goto(`/index.html#?fsw=${SIGNS.M}`);
     await waitForApp(page);
 
@@ -22,8 +21,7 @@ test.describe('PNG/SVG export', () => {
     expect(height).toBeGreaterThan(1);
   });
 
-  test('copies the PNG to the clipboard from the preview', async ({ page, context }, testInfo) => {
-    test.skip(testInfo.project.name === 'legacy', 'modern export dialog is a rewrite-only feature');
+  test('copies the PNG to the clipboard from the preview', async ({ page, context }) => {
     await context.grantPermissions(['clipboard-read', 'clipboard-write']);
     await page.goto(`/index.html#?fsw=${SIGNS.M}`);
     await waitForApp(page);

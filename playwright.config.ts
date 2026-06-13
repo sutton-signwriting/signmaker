@@ -1,11 +1,10 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const LEGACY_PORT = 4983;
 const MODERN_PORT = 4984;
 
 /**
- * One e2e suite, two implementations. Both projects run the same specs against their own
- * server — green on both proves the React rewrite preserves the legacy app's behavior.
+ * E2E suite for the built modern app. The original legacy parity suite was used during
+ * the v2 migration and removed when the legacy implementation left the tree.
  */
 export default defineConfig({
   testDir: './tests',
@@ -17,26 +16,14 @@ export default defineConfig({
   use: { trace: 'on-first-retry' },
   projects: [
     {
-      name: 'legacy',
-      use: { ...devices['Desktop Chrome'], baseURL: `http://localhost:${LEGACY_PORT}` },
-    },
-    {
       name: 'modern',
       use: { ...devices['Desktop Chrome'], baseURL: `http://localhost:${MODERN_PORT}` },
     },
   ],
-  webServer: [
-    {
-      command: `npx serve legacy -l ${LEGACY_PORT} --no-clipboard`,
-      url: `http://localhost:${LEGACY_PORT}`,
-      reuseExistingServer: !process.env.CI,
-      timeout: 60000,
-    },
-    {
-      command: `npm run build && npx vite preview --port ${MODERN_PORT} --strictPort`,
-      url: `http://localhost:${MODERN_PORT}`,
-      reuseExistingServer: !process.env.CI,
-      timeout: 120000,
-    },
-  ],
+  webServer: {
+    command: `npm run build:package && npx vite preview --port ${MODERN_PORT} --strictPort`,
+    url: `http://localhost:${MODERN_PORT}`,
+    reuseExistingServer: !process.env.CI,
+    timeout: 120000,
+  },
 });

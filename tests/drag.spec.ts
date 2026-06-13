@@ -16,7 +16,7 @@ async function dragPaletteSymbolToSignbox(page: import('@playwright/test').Page,
   return to;
 }
 
-test.describe('palette drag-and-drop (parity across both implementations)', () => {
+test.describe('palette drag-and-drop', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/index.html');
     await waitForApp(page);
@@ -27,8 +27,7 @@ test.describe('palette drag-and-drop (parity across both implementations)', () =
     expect(symbolCount(await fswlive(page))).toBe(1);
   });
 
-  test('rubber-band selects multiple symbols and group ops apply to all', async ({ page }, testInfo) => {
-    test.skip(testInfo.project.name === 'legacy', 'multi-select is a modern-only feature');
+  test('rubber-band selects multiple symbols and group ops apply to all', async ({ page }) => {
     await page.evaluate(() => {
       const vm = (window as unknown as { signmaker: { vm: { clear: () => void; add: (s: object) => void } } }).signmaker.vm;
       vm.clear();
@@ -49,8 +48,7 @@ test.describe('palette drag-and-drop (parity across both implementations)', () =
     expect(symbolCount(await fswlive(page))).toBe(0);
   });
 
-  test('duplicating a multi-selection selects all the new copies', async ({ page }, testInfo) => {
-    test.skip(testInfo.project.name === 'legacy', 'multi-select is a modern-only feature');
+  test('duplicating a multi-selection selects all the new copies', async ({ page }) => {
     await page.evaluate(() => {
       const vm = (window as unknown as { signmaker: { vm: { clear: () => void; add: (s: object) => void } } }).signmaker.vm;
       vm.clear();
@@ -72,8 +70,7 @@ test.describe('palette drag-and-drop (parity across both implementations)', () =
     await expect(page.locator('#signbox .selected')).toHaveCount(2); // the new copies, not the originals
   });
 
-  test('mirroring a multi-selection reflects positions and is its own inverse', async ({ page }, testInfo) => {
-    test.skip(testInfo.project.name === 'legacy', 'group mirror is a modern-only feature');
+  test('mirroring a multi-selection reflects positions and is its own inverse', async ({ page }) => {
     await page.evaluate(() => {
       const vm = (window as unknown as { signmaker: { vm: { clear: () => void; add: (s: object) => void } } }).signmaker.vm;
       vm.clear();
@@ -98,8 +95,7 @@ test.describe('palette drag-and-drop (parity across both implementations)', () =
     expect(await fswlive(page)).toBe(before); // mirror is its own inverse
   });
 
-  test('rotating a multi-selection rotates the group around its center', async ({ page }, testInfo) => {
-    test.skip(testInfo.project.name === 'legacy', 'group rotate is a modern-only feature');
+  test('rotating a multi-selection rotates the group around its center', async ({ page }) => {
     await page.evaluate(() => {
       const vm = (window as unknown as { signmaker: { vm: { clear: () => void; add: (s: object) => void } } }).signmaker.vm;
       vm.clear();
@@ -123,8 +119,7 @@ test.describe('palette drag-and-drop (parity across both implementations)', () =
     expect(symbolCount(after)).toBe(2);
   });
 
-  test('adding a generated sign appends it (selected), not replacing', async ({ page }, testInfo) => {
-    test.skip(testInfo.project.name === 'legacy', 'addSign (fingerspelling/mouthing) is a modern-only feature');
+  test('adding a generated sign appends it (selected), not replacing', async ({ page }) => {
     await page.evaluate(() => {
       const vm = (window as unknown as { signmaker: { vm: { clear: () => void; add: (s: object) => void; addSign: (f: string) => void } } }).signmaker.vm;
       vm.clear();
@@ -135,8 +130,7 @@ test.describe('palette drag-and-drop (parity across both implementations)', () =
     await expect(page.locator('#signbox .selected')).toHaveCount(3); // only the added symbols
   });
 
-  test('dropped symbol is centered at the drop point', async ({ page }, testInfo) => {
-    test.skip(testInfo.project.name === 'legacy', 'precise drop centering is a modern-only refinement');
+  test('dropped symbol is centered at the drop point', async ({ page }) => {
     const drop = await dragPaletteSymbolToSignbox(page, 0.5, 0.45);
     const placed = page.locator('#signbox .selected').first();
     await placed.waitFor();

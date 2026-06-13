@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { waitForApp, fswlive, fswnorm, symbolCount, vm, SYMBOL_PATTERN, SIGNS } from './support';
 
-test.describe('symbol operations (parity across both implementations)', () => {
+test.describe('symbol operations', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/index.html');
     await waitForApp(page);
