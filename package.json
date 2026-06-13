@@ -1,48 +1,36 @@
 {
-  "name": "@sutton-signwriting/signmaker",
-  "description": "Create and edit signs using Formal SignWriting in ASCII (FSW) or SignWriting in Unicode (SWU)",
-  "version": "1.2.1",
+  "name": "signmaker",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "description": "Modern editor for Formal SignWriting in ASCII (FSW) and SignWriting in Unicode (SWU)",
   "license": "MIT",
-  "author": {
-    "name": "Steve Slevinski",
-    "email": "slevinski@signwriting.org",
-    "url": "https://steve.signwriting.org"
-  },
-  "homepage": "https://sutton-signwriting.github.io/signmaker/",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/sutton-signwriting/signmaker.git"
-  },
-  "bugs": "https://github.com/sutton-signwriting/signmaker/issues",
-  "keywords": [
-    "SignWriting",
-    "editor",
-    "sign language",
-    "signmaker",
-    "fsw",
-    "swu"
-  ],
-  "files": [
-    "README.*",
-    "CHANGELOG.*",
-    "package.json",
-    "index.*",
-    "demo.*",
-    "noscript.css",
-    "signmaker.png",
-    "/config/*.js",
-    "/config/alphabet/README.md",
-    "/config/alphabet/alphabet-*.js",
-    "/lib/*.js"
-  ],
   "scripts": {
-    "premd2html": "./version.sh",
-    "md2html": "markdown-it README.md -o README.html;markdown-it CHANGELOG.md -o CHANGELOG.html;"
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "serve:legacy": "serve legacy -l 4983 --no-clipboard",
+    "test": "playwright test"
+  },
+  "dependencies": {
+    "@sign-mt/i18n": "github:sign/i18n",
+    "@sutton-signwriting/core": "^2.0.1",
+    "@sutton-signwriting/font-ttf": "^1.6.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
-    "@playwright/test": "^1.58.2",
-    "@types/node": "^25.2.3",
-    "markdown-it": "^12.3.0",
-    "serve": "^14.2.5"
+    "@playwright/test": "^1.60.0",
+    "@tailwindcss/vite": "^4.3.0",
+    "@types/node": "^25.9.2",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.2",
+    "serve": "^14.2.6",
+    "tailwindcss": "^4.3.0",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.16"
   }
 }
