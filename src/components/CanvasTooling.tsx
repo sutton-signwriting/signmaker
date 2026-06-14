@@ -5,7 +5,8 @@ import { useToolStore, type Tool } from '../store/toolStore';
 import { useTranslation } from '../hooks/useTranslation';
 import { IANASignedLanguages } from '../i18n/ianaLanguages';
 import { signedLanguageName, spokenLanguageName, spokenApiCode, mouthingSupported } from '../i18n/languageNames';
-import { signSvg, signNormalize } from '../lib/sign';
+import { signNormalize } from '../lib/sign';
+import { useSignSvg } from '../hooks/useGlyph';
 import { recaptchaToken } from '../lib/recaptcha';
 import { apiDomain } from '../lib/api';
 import { LanguageIcon, HandIcon, MouthIcon, TranslateIcon } from './icons';
@@ -101,6 +102,7 @@ function GeneratePopover({ tool, onClose }: { tool: 'fingerspelling' | 'mouthing
   const [text, setText] = useState('');
   const [fsw, setFsw] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'empty'>('idle');
+  const preview = useSignSvg(fsw);
   const inputRef = useRef<HTMLInputElement>(null);
   const addSign = useSignStore((s) => s.addSign);
   const { signed, spoken } = useLangStore();
@@ -170,7 +172,7 @@ function GeneratePopover({ tool, onClose }: { tool: 'fingerspelling' | 'mouthing
             data-tip={t('addToCanvas')}
             aria-label={t('addToCanvas')}
             onClick={accept}
-            dangerouslySetInnerHTML={{ __html: signSvg(fsw) }}
+            dangerouslySetInnerHTML={{ __html: preview }}
           />
         )}
       </div>

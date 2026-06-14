@@ -1,5 +1,5 @@
 import { useSignStore } from '../store/signStore';
-import { symbolSvg } from '../lib/sign';
+import { useSymbolSvg } from '../hooks/useGlyph';
 import { useDrag, seqPosition } from '../hooks/useDrag';
 import { useTranslation } from '../hooks/useTranslation';
 import { save } from '../lib/bridge';
@@ -14,7 +14,7 @@ function SortItem({ symbolKey }: { symbolKey: string }) {
       reorderSeq(seqPosition(clientY - dy), seqPosition(clientY));
     },
   });
-  return <div className="sort" onPointerDown={onPointerDown} dangerouslySetInnerHTML={{ __html: symbolSvg(symbolKey) }} />;
+  return <div className="sort" onPointerDown={onPointerDown} dangerouslySetInnerHTML={{ __html: useSymbolSvg(symbolKey) }} />;
 }
 
 export function Sequence() {
