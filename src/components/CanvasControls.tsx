@@ -15,6 +15,7 @@ import {
   DeleteIcon,
   TrashIcon,
   DuplicateIcon,
+  SymmetryIcon,
   BringToFrontIcon,
   SettingsIcon,
   ExportIcon,
@@ -151,6 +152,9 @@ export function CanvasControls() {
         <span className="canvas-divider" />
         <IconButton id="tool-copy" label={`${t('duplicate')} (${HINTS.copy})`} onClick={s.copy}>
           <DuplicateIcon />
+        </IconButton>
+        <IconButton id="tool-symmetric" label={tip(t, 'symmetricDuplicate')} onClick={s.symmetricDuplicate}>
+          <SymmetryIcon />
         </IconButton>
         <IconButton id="tool-over" label={`${t('bringToFront')} (${HINTS.over})`} onClick={s.over}>
           <BringToFrontIcon />

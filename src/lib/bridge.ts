@@ -116,6 +116,7 @@ export function installBridge(): void {
       addSeq: (key: string, position: number) => store().addSeq(key, position),
       delete: () => store().remove(),
       copy: () => store().copy(),
+      symmetricDuplicate: () => store().symmetricDuplicate(),
       clear: () => store().clear(),
       mirror: () => store().mirror(),
       rotate: (step: number) => store().rotate(step),

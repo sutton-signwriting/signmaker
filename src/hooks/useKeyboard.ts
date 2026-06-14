@@ -37,6 +37,10 @@ const keyboard: Record<string, Check | Check[]> = {
     [36, 'ctrlKey'],
     [36, 'metaKey'],
   ],
+  symmetricDuplicate: [
+    [68, 'shiftKey', 'metaKey'],
+    [68, 'shiftKey', 'ctrlKey'],
+  ],
   duplicate: [
     [68, 'metaKey'],
     [68, 'ctrlKey'],
@@ -64,7 +68,7 @@ const ARROWS: Record<number, Direction> = { 37: 'left', 38: 'up', 39: 'right', 4
 const ACTIONS: { name: string; tool: string | null; run: (s: Store, ui: Ui) => void }[] = [
   { name: 'selectBack', tool: 'selectPrev', run: (s) => s.select(-1) },
   { name: 'selectNext', tool: 'selectNext', run: (s) => s.select(1) },
-  { name: 'escape', tool: null, run: (_s, ui) => ui.set({ tab: ui.tab === 'more' ? '' : 'more' }) },
+  { name: 'escape', tool: null, run: (s) => s.selnone() },
   { name: 'delete', tool: 'delete', run: (s) => s.remove() },
   { name: 'redo', tool: 'redo', run: (s) => s.redo() },
   { name: 'undo', tool: 'undo', run: (s) => s.undo() },
@@ -76,6 +80,7 @@ const ACTIONS: { name: string; tool: string | null; run: (s: Store, ui: Ui) => v
   { name: 'fillBack', tool: 'fillPrev', run: (s) => s.fill(-1) },
   { name: 'fillNext', tool: 'fillNext', run: (s) => s.fill(1) },
   { name: 'recenter', tool: 'center', run: (s) => s.center() },
+  { name: 'symmetricDuplicate', tool: 'symmetric', run: (s) => s.symmetricDuplicate() },
   { name: 'duplicate', tool: 'copy', run: (s) => s.copy() },
   { name: 'bringFront', tool: 'over', run: (s) => s.over() },
   { name: 'sendBack', tool: null, run: (s) => s.under() },
@@ -130,6 +135,8 @@ export function useKeyboard(): void {
     // ⌘-shortcuts like recenter/undo/redo. Arrows repeat (startMove dedupes); others ignore repeats.
     const onKeyDown = (event: KeyboardEvent) => {
       if (isTyping(event.target)) return;
+      // A modal dialog owns its keys — let Escape close it natively, and don't run shortcuts behind it.
+      if (document.querySelector('dialog[open]')) return;
       const dir = ARROWS[event.keyCode];
       if (dir) {
         startMove(dir, event.shiftKey);

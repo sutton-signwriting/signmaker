@@ -102,6 +102,14 @@ export const DuplicateIcon = (p: SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
+export const SymmetryIcon = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...base(p)}>
+    <path d="M12 3v18" strokeDasharray="2 2" />
+    <rect x="3" y="8" width="6" height="8" rx="1" />
+    <rect x="15" y="8" width="6" height="8" rx="1" />
+  </svg>
+);
+
 export const CopyIcon = (p: SVGProps<SVGSVGElement>) => (
   <svg {...base(p)}>
     <rect x="9" y="9" width="11" height="11" rx="2" />

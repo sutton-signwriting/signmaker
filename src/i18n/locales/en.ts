@@ -42,6 +42,7 @@ const en: Messages = {
   clear: 'Clear',
 
   duplicate: 'Duplicate',
+  symmetricDuplicate: 'Symmetric Duplicate',
   bringToFront: 'Bring to Front',
   settings: 'Settings',
   export: 'Export',
