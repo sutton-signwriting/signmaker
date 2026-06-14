@@ -4,6 +4,7 @@ import { useUiStore } from '../store/uiStore';
 import { useTranslation } from '../hooks/useTranslation';
 import { useLightDismiss } from '../hooks/useLightDismiss';
 import { signPng, signSvg, withStyle } from '../lib/sign';
+import { useSignSvg } from '../hooks/useGlyph';
 import { CopyIcon, CheckIcon } from './icons';
 import { Sign } from './Sign';
 
@@ -43,6 +44,7 @@ export function ExportDialog({ dialogRef }: { dialogRef: RefObject<HTMLDialogEle
   }, [ui.tab]);
 
   const styled = withStyle(fswnorm, ui);
+  const preview = useSignSvg(styled);
   const seg = (active: boolean) =>
     `export-tab${active ? ' export-tab-active' : ''}`;
 
@@ -77,7 +79,7 @@ export function ExportDialog({ dialogRef }: { dialogRef: RefObject<HTMLDialogEle
 
       <div className="export-body">
         <div className="export-preview">
-          <div className="export-preview-img" dangerouslySetInnerHTML={{ __html: signSvg(styled) || '' }} />
+          <div className="export-preview-img" dangerouslySetInnerHTML={{ __html: preview }} />
           {format === 'png' && (
             <button
               type="button"

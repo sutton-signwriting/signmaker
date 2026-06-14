@@ -7,6 +7,7 @@ import { useDrag, pointInElement, seqPosition } from '../hooks/useDrag';
 import { save } from '../lib/bridge';
 import { SYMBOL_NAMES } from '../i18n/symbolNames';
 import { symbolSvg, symbolSize, mirror as mirrorKey } from '../lib/sign';
+import { useSymbolSvg } from '../hooks/useGlyph';
 import { HomeIcon, SaveIcon } from './icons';
 
 /** A full-size symbol that follows the cursor, centered, while dragging from the palette. */
@@ -70,13 +71,13 @@ const PaletteCell = memo(function PaletteCell({ symbolKey, tooltip }: { symbolKe
       aria-label={tooltip || undefined}
       disabled={!symbolKey}
       onPointerDown={symbolKey ? onPointerDown : undefined}
-      dangerouslySetInnerHTML={{ __html: symbolSvg(symbolKey) }}
+      dangerouslySetInnerHTML={{ __html: useSymbolSvg(symbolKey) }}
     />
   );
 });
 
 function Crumb({ symbolKey, onClick }: { symbolKey: string; onClick?: () => void }) {
-  const inner = <span className="crumb-sym" dangerouslySetInnerHTML={{ __html: symbolSvg(symbolKey) }} />;
+  const inner = <span className="crumb-sym" dangerouslySetInnerHTML={{ __html: useSymbolSvg(symbolKey) }} />;
   return onClick ? (
     <button type="button" className="crumb crumb-link" onClick={onClick}>
       {inner}

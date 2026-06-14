@@ -1,7 +1,9 @@
 import { useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
 import { useSignStore } from '../store/signStore';
 import { useUiStore } from '../store/uiStore';
-import { extent, symbolSize, symbolSvg, type Sym } from '../lib/sign';
+import { extent, symbolSize, type Sym } from '../lib/sign';
+import { useSymbolSvg } from '../hooks/useGlyph';
+import { useFontStore } from '../store/fontStore';
 import { useDrag, pointInElement, seqPosition } from '../hooks/useDrag';
 import { CanvasControls } from './CanvasControls';
 import { CanvasTooling } from './CanvasTooling';
@@ -16,6 +18,7 @@ interface Mid {
 /** Compute the signbox center offset, panning to keep large signs in view (legacy signmaker.view). */
 function useMid(boxRef: RefObject<HTMLDivElement | null>, symbols: Sym[]): Mid {
   const [mid, setMid] = useState<Mid>({ w: 0, h: 0, clientW: 0, clientH: 0 });
+  const fontsReady = useFontStore((s) => s.ready);
 
   useLayoutEffect(() => {
     const el = boxRef.current;
@@ -35,10 +38,9 @@ function useMid(boxRef: RefObject<HTMLDivElement | null>, symbols: Sym[]): Mid {
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
-    // Symbol sizes come from the SignWriting fonts; re-measure once they finish loading.
-    document.fonts?.ready.then(measure);
     return () => ro.disconnect();
-  }, [boxRef, symbols]);
+    // Symbol sizes come from the SignWriting fonts, so re-measure once they load.
+  }, [boxRef, symbols, fontsReady]);
 
   return mid;
 }
@@ -79,7 +81,7 @@ function DraggableSymbol({ sym, index, mid }: { sym: Sym; index: number; mid: Mi
         e.stopPropagation();
         drag(e);
       }}
-      dangerouslySetInnerHTML={{ __html: symbolSvg(sym.key) }}
+      dangerouslySetInnerHTML={{ __html: useSymbolSvg(sym.key) }}
     />
   );
 }
