@@ -50,6 +50,7 @@ interface SignState {
   selectIndices: (indices: number[]) => void;
   select: (step: number) => void;
   copy: () => void;
+  symmetricDuplicate: () => void;
   remove: () => void;
   clear: () => void;
   reorderSeq: (from: number, to: number) => void;
@@ -164,6 +165,21 @@ export const useSignStore = create<SignState>((set, get) => ({
     get().addhistory();
   },
 
+  symmetricDuplicate: () => {
+    const list = get().list;
+    const copies = list
+      .filter((s) => s.selected)
+      .map((s) => {
+        // Mirror the glyph and reflect it across the center axis (x=500), keeping the same height.
+        const key = sign.mirror(s.key);
+        const [w] = sign.symbolSize(key);
+        return { key, ...clampPos(key, 1000 - s.x - w, s.y), selected: true };
+      });
+    if (!copies.length) return;
+    set({ list: [...list.map((s) => ({ ...s, selected: false })), ...copies] });
+    get().addhistory();
+  },
+
   remove: () => {
     set({ list: get().list.filter((s) => !s.selected) });
     get().addhistory();
@@ -202,19 +218,21 @@ export const useSignStore = create<SignState>((set, get) => ({
     const list = get().list;
     const selected = list.filter((s) => s.selected);
     if (!selected.length) return;
-    // Reflect selected anchors across the selection's horizontal anchor center. Using anchors
-    // rather than glyph extents keeps mirror self-inverse even when mirrored glyph widths differ.
+    // Reflect each selected symbol's glyph box across the selection's horizontal center, so a
+    // multi-symbol selection mirrors as a group (a single symbol just flips in place).
     let minX = Infinity;
     let maxX = -Infinity;
     for (const s of selected) {
+      const [w] = sign.symbolSize(s.key);
       minX = Math.min(minX, s.x);
-      maxX = Math.max(maxX, s.x);
+      maxX = Math.max(maxX, s.x + w);
     }
     set({
       list: list.map((s) => {
         if (!s.selected) return s;
         const key = sign.mirror(s.key);
-        return { ...s, key, ...clampPos(key, minX + maxX - s.x, s.y) };
+        const [w] = sign.symbolSize(s.key);
+        return { ...s, key, ...clampPos(key, minX + maxX - s.x - w, s.y) };
       }),
     });
     get().addhistory();

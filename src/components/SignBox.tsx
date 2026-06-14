@@ -1,7 +1,10 @@
 import { useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
 import { useSignStore } from '../store/signStore';
 import { useUiStore } from '../store/uiStore';
+import { useGuideStore } from '../store/guideStore';
 import { extent, symbolSize, type Sym } from '../lib/sign';
+import { unionBox, staticBoxes, shift, type Box } from '../lib/snap';
+import { snapToGuides, clearGuides } from '../lib/guides';
 import { useSymbolSvg } from '../hooks/useGlyph';
 import { useFontStore } from '../store/fontStore';
 import { useDrag, pointInElement, seqPosition } from '../hooks/useDrag';
@@ -48,19 +51,31 @@ function useMid(boxRef: RefObject<HTMLDivElement | null>, symbols: Sym[]): Mid {
 /** A placed symbol — drags itself (or, if part of a multi-selection, the whole group). */
 function DraggableSymbol({ sym, index, mid }: { sym: Sym; index: number; mid: Mid }) {
   const last = useRef({ x: 0, y: 0 });
+  // Captured at drag start so snapping measures the moving group and the stationary symbols once.
+  const startBox = useRef<Box | null>(null);
+  const boxes = useRef<Box[]>([]);
 
   const drag = useDrag({
     onStart: () => {
       last.current = { x: 0, y: 0 };
       if (!useSignStore.getState().list[index]?.selected) useSignStore.getState().selectOnly(index);
+      const list = useSignStore.getState().list;
+      startBox.current = unionBox(list.filter((s) => s.selected));
+      boxes.current = staticBoxes(list.filter((s) => !s.selected));
     },
     onMove: ({ dx, dy }) => {
-      const ix = Math.round(dx);
-      const iy = Math.round(dy);
-      useSignStore.getState().nudge(ix - last.current.x, iy - last.current.y);
-      last.current = { x: ix, y: iy };
+      const box = startBox.current;
+      if (!box) return;
+      const desiredX = Math.round(dx);
+      const desiredY = Math.round(dy);
+      const { dx: sdx, dy: sdy } = snapToGuides(shift(box, desiredX, desiredY), boxes.current);
+      const totalX = Math.round(desiredX + sdx);
+      const totalY = Math.round(desiredY + sdy);
+      useSignStore.getState().nudge(totalX - last.current.x, totalY - last.current.y);
+      last.current = { x: totalX, y: totalY };
     },
     onEnd: ({ clientX, clientY, moved }) => {
+      clearGuides();
       const store = useSignStore.getState();
       if (!moved) {
         store.selectOnly(index);
@@ -108,6 +123,25 @@ function Grid({ level, mid }: { level: string; mid: Mid }) {
         <line x1={0} y1={h} x2={clientW} y2={h} strokeWidth={1} />
         <line x1={w} y1={0} x2={w} y2={clientH} strokeWidth={1} />
       </g>
+    </svg>
+  );
+}
+
+/** Dashed alignment guides + dotted symmetry connectors drawn while dragging or arrow-moving. */
+function Guides({ mid }: { mid: Mid }) {
+  const x = useGuideStore((g) => g.x);
+  const y = useGuideStore((g) => g.y);
+  const sym = useGuideStore((g) => g.sym);
+  if (!mid.clientW || (!x.length && !y.length && !sym.length)) return null;
+  const px = (v: number) => v - 500 + mid.w;
+  const py = (v: number) => v - 500 + mid.h;
+  return (
+    <svg className="snap-guides" width={mid.clientW} height={mid.clientH} viewBox={`0 0 ${mid.clientW} ${mid.clientH}`} xmlns="http://www.w3.org/2000/svg">
+      {x.map((vx) => <line key={`gx${vx}`} x1={px(vx)} y1={0} x2={px(vx)} y2={mid.clientH} />)}
+      {y.map((vy) => <line key={`gy${vy}`} x1={0} y1={py(vy)} x2={mid.clientW} y2={py(vy)} />)}
+      {sym.map((s, i) => (
+        <line key={`gs${i}`} className="snap-symmetry" x1={px(s.x1)} y1={py(s.y1)} x2={px(s.x2)} y2={py(s.y2)} />
+      ))}
     </svg>
   );
 }
@@ -175,6 +209,7 @@ export function SignBox() {
         <DraggableSymbol key={`${index}:${sym.key}`} sym={sym} index={index} mid={mid} />
       ))}
       {rubber && <div className="rubber-band" style={{ left: rubber.x, top: rubber.y, width: rubber.w, height: rubber.h }} />}
+      <Guides mid={mid} />
       <CanvasControls />
       <CanvasTooling />
     </div>

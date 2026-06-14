@@ -44,6 +44,7 @@ export interface Messages {
   clear: string;
 
   duplicate: string;
+  symmetricDuplicate: string;
   bringToFront: string;
   settings: string;
   export: string;

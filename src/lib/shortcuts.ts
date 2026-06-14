@@ -19,6 +19,7 @@ export const HINTS: Record<string, string> = {
   selectPrev: '⇧⇥',
   selectNext: '⇥',
   copy: `${MOD}D`,
+  symmetricDuplicate: isMac ? '⌘⇧D' : 'Ctrl+Shift+D',
   over: `${MOD}⇧]`,
   fingerspelling: 'F',
   mouthing: 'M',

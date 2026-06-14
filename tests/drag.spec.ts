@@ -130,6 +130,50 @@ test.describe('palette drag-and-drop', () => {
     await expect(page.locator('#signbox .selected')).toHaveCount(3); // only the added symbols
   });
 
+  test('dragging a symbol near another shows guides and snaps to alignment', async ({ page }) => {
+    await page.evaluate(() => {
+      const vm = (window as unknown as { signmaker: { vm: { clear: () => void; add: (s: object) => void } } }).signmaker.vm;
+      vm.clear();
+      vm.add({ key: 'S10000', x: 450, y: 400 });
+      vm.add({ key: 'S10000', x: 475, y: 600 }); // same width, 25 units to the right
+    });
+    const syms = page.locator('#signbox .signbox-symbol');
+    const a = await syms.nth(0).boundingBox();
+    const b = await syms.nth(1).boundingBox();
+    if (!a || !b) throw new Error('symbols not found');
+    expect(Math.round(b.x - a.x)).toBe(25);
+
+    await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
+    await page.mouse.down();
+    for (let i = 1; i <= 11; i++) await page.mouse.move(b.x + b.width / 2 - 2 * i, b.y + b.height / 2);
+    expect(await page.locator('svg.snap-guides line').count()).toBeGreaterThan(0); // guides while dragging
+    await page.mouse.up();
+    await page.waitForTimeout(150);
+
+    const a2 = await syms.nth(0).boundingBox();
+    const b2 = await syms.nth(1).boundingBox();
+    if (!a2 || !b2) throw new Error('symbols not found');
+    expect(Math.abs(b2.x - a2.x)).toBeLessThanOrEqual(1); // snapped to the same left edge
+    await expect(page.locator('svg.snap-guides line')).toHaveCount(0); // cleared after release
+  });
+
+  test('dragging a palette symbol snaps to the center axis with a guide', async ({ page }) => {
+    const center = (await page.locator('.valid-range').boundingBox())!.x + 250;
+    const sb = (await page.locator('#signbox').boundingBox())!;
+    const cell = page.locator('#palette .row button:not([disabled])').first();
+    await cell.waitFor();
+    const cb = (await cell.boundingBox())!;
+    await page.mouse.move(cb.x + cb.width / 2, cb.y + cb.height / 2);
+    await page.mouse.down();
+    for (let i = 1; i <= 12; i++) {
+      await page.mouse.move(cb.x + (center + 2 - cb.x) * (i / 12), cb.y + (sb.y + 300 - cb.y) * (i / 12));
+    }
+    await expect(page.locator('svg.snap-guides line')).not.toHaveCount(0); // guides during palette drag
+    await page.mouse.up();
+    const s = (await page.locator('#signbox .signbox-symbol').boundingBox())!;
+    expect(Math.abs(s.x + s.width / 2 - center)).toBeLessThanOrEqual(1); // dropped snapped to center
+  });
+
   test('dropped symbol is centered at the drop point', async ({ page }) => {
     const drop = await dragPaletteSymbolToSignbox(page, 0.5, 0.45);
     const placed = page.locator('#signbox .selected').first();

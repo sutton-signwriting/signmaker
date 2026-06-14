@@ -7,6 +7,8 @@ import { useDrag, pointInElement, seqPosition } from '../hooks/useDrag';
 import { save } from '../lib/bridge';
 import { SYMBOL_NAMES } from '../i18n/symbolNames';
 import { symbolSvg, symbolSize, mirror as mirrorKey } from '../lib/sign';
+import { staticBoxes, boxOf, type Box } from '../lib/snap';
+import { snapToGuides, clearGuides } from '../lib/guides';
 import { useSymbolSvg } from '../hooks/useGlyph';
 import { HomeIcon, SaveIcon } from './icons';
 
@@ -19,11 +21,27 @@ function makeGhost(symbolKey: string): HTMLDivElement {
   return ghost;
 }
 
+/** The symbol-space anchor a palette drop at (clientX, clientY) would land on, or null if off the signbox. */
+function dropAnchor(symbolKey: string, clientX: number, clientY: number): { x: number; y: number; w: number; h: number } | null {
+  const box = document.getElementById('signbox');
+  if (!box || !pointInElement('signbox', clientX, clientY)) return null;
+  const r = box.getBoundingClientRect();
+  const [w, h] = symbolSize(symbolKey);
+  return {
+    x: 500 - box.clientWidth / 2 + (clientX - r.left) - w / 2,
+    y: 500 - box.clientHeight / 2 + (clientY - r.top) - h / 2,
+    w,
+    h,
+  };
+}
+
 const PaletteCell = memo(function PaletteCell({ symbolKey, tooltip }: { symbolKey: string; tooltip: string }) {
   const click = usePaletteStore((s) => s.click);
   const add = useSignStore((s) => s.add);
   const addSeq = useSignStore((s) => s.addSeq);
   const ghost = useRef<HTMLDivElement | null>(null);
+  const boxes = useRef<Box[]>([]);
+  const snapOffset = useRef({ dx: 0, dy: 0 });
 
   const positionGhost = (clientX: number, clientY: number) => {
     const [w, h] = symbolSize(symbolKey);
@@ -33,15 +51,27 @@ const PaletteCell = memo(function PaletteCell({ symbolKey, tooltip }: { symbolKe
   };
 
   const onPointerDown = useDrag({
+    onStart: () => {
+      boxes.current = staticBoxes(useSignStore.getState().list);
+      snapOffset.current = { dx: 0, dy: 0 };
+    },
     onMove: ({ clientX, clientY, moved }) => {
       if (!symbolKey || !moved) return;
       // First dragging move: collapse the mobile palette drawer so the canvas is exposed for the drop.
       if (!ghost.current) useUiStore.getState().set({ paletteOpen: false });
-      positionGhost(clientX, clientY);
+      const anchor = dropAnchor(symbolKey, clientX, clientY);
+      if (anchor) {
+        snapOffset.current = snapToGuides(boxOf(anchor.x, anchor.y, anchor.w, anchor.h), boxes.current);
+      } else {
+        snapOffset.current = { dx: 0, dy: 0 };
+        clearGuides();
+      }
+      positionGhost(clientX + snapOffset.current.dx, clientY + snapOffset.current.dy);
     },
     onEnd: ({ clientX, clientY, moved }) => {
       ghost.current?.remove();
       ghost.current = null;
+      clearGuides();
       if (!symbolKey) return;
       if (!moved) {
         click(symbolKey);
@@ -49,15 +79,9 @@ const PaletteCell = memo(function PaletteCell({ symbolKey, tooltip }: { symbolKe
       }
       // Drop completed — drop focus from the palette cell so keyboard shortcuts act on the sign.
       (document.activeElement as HTMLElement | null)?.blur();
-      const box = document.getElementById('signbox');
-      if (box && pointInElement('signbox', clientX, clientY)) {
-        const r = box.getBoundingClientRect();
-        const [w, h] = symbolSize(symbolKey);
-        add({
-          key: symbolKey,
-          x: Math.round(500 - box.clientWidth / 2 + (clientX - r.left) - w / 2),
-          y: Math.round(500 - box.clientHeight / 2 + (clientY - r.top) - h / 2),
-        });
+      const anchor = dropAnchor(symbolKey, clientX, clientY);
+      if (anchor) {
+        add({ key: symbolKey, x: Math.round(anchor.x + snapOffset.current.dx), y: Math.round(anchor.y + snapOffset.current.dy) });
       } else if (pointInElement('sequence', clientX, clientY)) {
         addSeq(symbolKey, seqPosition(clientY));
       }

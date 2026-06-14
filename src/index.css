@@ -505,6 +505,26 @@ html,body {
   pointer-events: none;
 }
 
+/* Alignment guides shown while dragging/arrow-moving a selection near another symbol. */
+.snap-guides {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 16;
+}
+.snap-guides line {
+  stroke: #e11d48;
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+/* Drawn last (on top) and thicker so it reads over the overlapping center/alignment guides. */
+.snap-guides line.snap-symmetry {
+  stroke: #7c3aed;
+  stroke-width: 2.5;
+  stroke-dasharray: 2 4;
+  stroke-linecap: round;
+}
+
 /* Rubber-band multi-select rectangle. */
 .rubber-band {
   border: 1px solid #2563eb;
@@ -574,7 +594,7 @@ html,body {
     display: grid;
     gap: 4px;
   }
-  .canvas-tools-left { grid-template-columns: repeat(4, 34px); }
+  .canvas-tools-left { grid-template-columns: repeat(5, 34px); }
   .canvas-tools-right { grid-template-columns: repeat(2, 34px); }
   .canvas-tools-left .canvas-divider,
   .canvas-tools-right .canvas-divider { display: none; }
