@@ -86,6 +86,66 @@ test.describe('symbol operations', () => {
     expect(Math.sign(a.x + a.width / 2 - center)).not.toBe(Math.sign(b.x + b.width / 2 - center));
   });
 
+  test('S enters select mode, navigates the palette, and adds a symbol', async ({ page }) => {
+    await page.keyboard.press('s');
+    await expect(page.locator('.palette-num')).toHaveCount(10); // category numbers 1–9,0
+    await expect(page.locator('#arrow-up')).toBeDisabled(); // canvas arrow pad inert in select mode
+    await expect(page.locator('#palette .row button.focused')).toHaveCount(1);
+    // Drill top -> group -> base, then the leaf Enter drops it centered and exits.
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#signbox .signbox-symbol')).toHaveCount(1);
+    await expect(page.locator('#signbox .signbox-symbol.selected')).toHaveCount(1);
+    await expect(page.locator('.palette-num')).toHaveCount(0); // select mode exited
+  });
+
+  test('clicking a leaf symbol (no submenu) adds it to the canvas', async ({ page }) => {
+    const first = () => page.locator('#palette .row button:not([disabled])').first();
+    await first().click(); // top -> group
+    await first().click(); // group -> base
+    await first().click(); // base leaf -> add, centered + selected
+    await expect(page.locator('#signbox .signbox-symbol')).toHaveCount(1);
+    await expect(page.locator('#signbox .signbox-symbol.selected')).toHaveCount(1);
+  });
+
+  test('S mode: Left at the first column steps back up a level', async ({ page }) => {
+    await page.keyboard.press('s');
+    await page.keyboard.press('Enter'); // top -> group
+    await expect(page.locator('.palette-crumbs .crumb')).not.toHaveCount(0);
+    await page.keyboard.press('ArrowLeft'); // at col 0 -> back to top
+    await expect(page.locator('.palette-crumbs .crumb')).toHaveCount(0);
+    await expect(page.locator('.palette-num')).toHaveCount(10); // still in select mode
+  });
+
+  test('S mode: Backspace steps back up a level', async ({ page }) => {
+    await page.keyboard.press('s');
+    await page.keyboard.press('Enter'); // top -> group
+    await expect(page.locator('.palette-crumbs .crumb')).not.toHaveCount(0);
+    await page.keyboard.press('Backspace'); // back to top
+    await expect(page.locator('.palette-crumbs .crumb')).toHaveCount(0);
+    await expect(page.locator('.palette-num')).toHaveCount(10); // still in select mode
+  });
+
+  test('selecting a canvas symbol leaves select mode', async ({ page }) => {
+    await vm(page, 'add', { key: 'S10000', x: 500, y: 500 });
+    await page.keyboard.press('s');
+    await expect(page.locator('.palette-num')).toHaveCount(10);
+    await page.locator('#signbox .signbox-symbol').first().click();
+    await expect(page.locator('.palette-num')).toHaveCount(0); // select mode exited
+    await expect(page.locator('#signbox .signbox-symbol.selected')).toHaveCount(1);
+  });
+
+  test('S clears the canvas selection and Escape exits select mode', async ({ page }) => {
+    await vm(page, 'add', { key: 'S10000', x: 500, y: 500 });
+    await expect(page.locator('#signbox .signbox-symbol.selected')).toHaveCount(1);
+    await page.keyboard.press('s');
+    await expect(page.locator('#signbox .signbox-symbol.selected')).toHaveCount(0);
+    await expect(page.locator('.palette-num')).toHaveCount(10);
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.palette-num')).toHaveCount(0);
+  });
+
   test('Escape deselects symbols and does not open settings', async ({ page }) => {
     await vm(page, 'add', { key: 'S10000', x: 500, y: 500 });
     expect(await page.locator('#signbox .signbox-symbol.selected').count()).toBe(1);

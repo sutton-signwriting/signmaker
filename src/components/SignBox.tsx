@@ -2,6 +2,7 @@ import { useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEve
 import { useSignStore } from '../store/signStore';
 import { useUiStore } from '../store/uiStore';
 import { useGuideStore } from '../store/guideStore';
+import { useSelectModeStore } from '../store/selectModeStore';
 import { extent, symbolSize, type Sym } from '../lib/sign';
 import { unionBox, staticBoxes, shift, type Box } from '../lib/snap';
 import { snapToGuides, clearGuides } from '../lib/guides';
@@ -58,6 +59,7 @@ function DraggableSymbol({ sym, index, mid }: { sym: Sym; index: number; mid: Mi
   const drag = useDrag({
     onStart: () => {
       last.current = { x: 0, y: 0 };
+      useSelectModeStore.getState().exit(); // grabbing a canvas symbol leaves keyboard select mode
       if (!useSignStore.getState().list[index]?.selected) useSignStore.getState().selectOnly(index);
       const list = useSignStore.getState().list;
       startBox.current = unionBox(list.filter((s) => s.selected));
@@ -185,6 +187,7 @@ export function SignBox() {
         if (!(left + w < x0 || left > x1 || top + h < y0 || top > y1)) indices.push(i);
       });
       selectIndices(indices);
+      if (indices.length) useSelectModeStore.getState().exit(); // rubber-band selection leaves select mode
     };
     const up = () => {
       window.removeEventListener('pointermove', move);
