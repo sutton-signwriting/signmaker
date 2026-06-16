@@ -1,6 +1,7 @@
 import { useEffect, useRef, type ComponentType, type PointerEvent, type ReactNode, type SVGProps } from 'react';
 import { useSignStore } from '../store/signStore';
 import { useUiStore } from '../store/uiStore';
+import { useSelectModeStore } from '../store/selectModeStore';
 import { useTranslation } from '../hooks/useTranslation';
 import { startMove, stopMove, type Direction } from '../lib/arrowRepeat';
 import { tip, HINTS } from '../lib/shortcuts';
@@ -98,7 +99,7 @@ function StepSection({
   );
 }
 
-function ArrowKey({ dir, label, children }: { dir: Direction; label: string; children: ReactNode }) {
+function ArrowKey({ dir, label, disabled, children }: { dir: Direction; label: string; disabled?: boolean; children: ReactNode }) {
   const press = (e: PointerEvent) => {
     e.currentTarget.setPointerCapture(e.pointerId);
     startMove(dir, e.shiftKey);
@@ -110,7 +111,8 @@ function ArrowKey({ dir, label, children }: { dir: Direction; label: string; chi
       className="arrow-key"
       data-tip={label}
       aria-label={label}
-      onPointerDown={press}
+      disabled={disabled}
+      onPointerDown={disabled ? undefined : press}
       onPointerUp={() => stopMove(dir)}
       onPointerCancel={() => stopMove(dir)}
     >
@@ -126,11 +128,14 @@ export function CanvasControls() {
   const settingsRef = useRef<HTMLDialogElement>(null);
   const exportRef = useRef<HTMLDialogElement>(null);
   const tab = useUiStore((ui) => ui.tab);
+  const selectActive = useSelectModeStore((sm) => sm.active);
+  // The arrow pad moves the selection — inert in select mode, or with nothing selected.
+  const arrowsDisabled = selectActive || !s.list.some((sym) => sym.selected);
   useLightDismiss(confirmRef);
 
   useEffect(() => {
-    if (tab === 'more') settingsRef.current?.showModal();
-    if (tab === 'png' || tab === 'svg') exportRef.current?.showModal();
+    if (tab === 'more' && !settingsRef.current?.open) settingsRef.current?.showModal();
+    if ((tab === 'png' || tab === 'svg') && !exportRef.current?.open) exportRef.current?.showModal();
   }, [tab]);
 
   return (
@@ -178,7 +183,7 @@ export function CanvasControls() {
         <IconButton id="tool-settings" label={t('settings')} onClick={() => settingsRef.current?.showModal()}>
           <SettingsIcon />
         </IconButton>
-        <IconButton id="tool-export" label={t('export')} onClick={() => exportRef.current?.showModal()}>
+        <IconButton id="tool-export" label={tip(t, 'export')} onClick={() => exportRef.current?.showModal()}>
           <ExportIcon />
         </IconButton>
       </div>
@@ -215,16 +220,16 @@ export function CanvasControls() {
       </div>
 
       <div className="arrow-pad">
-        <ArrowKey dir="up" label={`${t('moveUp')} (↑)`}>
+        <ArrowKey dir="up" label={`${t('moveUp')} (↑)`} disabled={arrowsDisabled}>
           <ChevronUp />
         </ArrowKey>
-        <ArrowKey dir="left" label={`${t('moveLeft')} (←)`}>
+        <ArrowKey dir="left" label={`${t('moveLeft')} (←)`} disabled={arrowsDisabled}>
           <ChevronLeft />
         </ArrowKey>
-        <ArrowKey dir="down" label={`${t('moveDown')} (↓)`}>
+        <ArrowKey dir="down" label={`${t('moveDown')} (↓)`} disabled={arrowsDisabled}>
           <ChevronDown />
         </ArrowKey>
-        <ArrowKey dir="right" label={`${t('moveRight')} (→)`}>
+        <ArrowKey dir="right" label={`${t('moveRight')} (→)`} disabled={arrowsDisabled}>
           <ChevronRight />
         </ArrowKey>
       </div>

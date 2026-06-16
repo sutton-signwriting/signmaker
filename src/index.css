@@ -398,6 +398,7 @@ html,body {
   flex-direction: column;
 }
 .row {
+  position: relative;
   display: flex;
   flex: 1;
   min-height: 0;
@@ -408,6 +409,51 @@ html,body {
   border: 1px solid #e2e8f0;
   padding: 0;
   background: transparent;
+}
+/* Keyboard select-mode cursor over the palette grid. */
+.row button.focused {
+  background: #dbeafe;
+  border-color: #2563eb;
+  box-shadow: inset 0 0 0 1px #2563eb;
+  z-index: 1;
+}
+/* Row number for select mode (1–9, 0), sitting on the first (category) cell. */
+.palette-num {
+  position: absolute;
+  top: 2px;
+  left: 3px;
+  z-index: 2;
+  pointer-events: none;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1;
+  color: #2563eb;
+}
+
+/* "S" availability hint / toggle in the palette bar. */
+.palette-select-hint {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.375rem;
+  background: #fff;
+  color: #475569;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 1px 0 #cbd5e1;
+}
+.palette-select-hint:hover {
+  background: #f1f5f9;
+}
+.palette-select-hint.active {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
 }
 .row button.clickable:hover {
   background: #f1f5f9;
@@ -600,6 +646,33 @@ html,body {
   .canvas-tools-right .canvas-divider { display: none; }
 }
 
+/* On a narrow signbox the centered 500-unit box reaches the left edge, so the vertically-centered
+   edit controls would sit on top of it. Lift them into a horizontal row just above the box. */
+@container (max-width: 740px) {
+  .canvas-edit {
+    left: 0;
+    right: 0;
+    top: calc(50% - 250px);
+    transform: translateY(calc(-100% - 8px));
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    pointer-events: none; /* the full-width band stays click-through; only the controls are interactive */
+  }
+  .canvas-edit .edit-section {
+    pointer-events: auto;
+  }
+}
+
+/* Too narrow to fit all three control groups in one row: rotation gets its own row, with
+   variation + fill paired on the next (never one group per row). */
+@container (max-width: 340px) {
+  .canvas-edit .edit-section:first-child {
+    flex-basis: 100%;
+    justify-content: center;
+  }
+}
+
 /* Keyboard-triggered "as if pressed" flash for any control button. */
 .is-pressed {
   background: #1e293b !important;
@@ -628,7 +701,8 @@ html,body {
   cursor: pointer;
   box-shadow: 0 2px 0 #cbd5e1;
 }
-.arrow-key:hover { background: #fff; }
+.arrow-key:hover:not(:disabled) { background: #fff; }
+.arrow-key:disabled { opacity: 0.35; cursor: default; box-shadow: none; }
 .arrow-key.active,
 .arrow-key:active { background: #1e293b; color: #fff; transform: translateY(1px); box-shadow: none; }
 #arrow-up { grid-column: 2; grid-row: 1; }
@@ -841,6 +915,7 @@ html,body {
 /* Export dialog */
 .export-dialog,
 .settings-dialog {
+  position: relative; /* containing block for the copied-to-clipboard toast */
   margin: auto; /* restore the modal centering Tailwind's preflight margin reset removes */
   border: none;
   border-radius: 12px;
@@ -882,6 +957,31 @@ html,body {
   font-size: 0.85rem;
 }
 .export-tab-active { background: #1e293b; color: #fff; border-color: #1e293b; }
+/* FSW/SWU copy-to-clipboard buttons sit alongside the PNG/SVG format tabs. */
+.export-copy-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-weight: 500;
+}
+.export-copy-text svg { width: 1em; height: 1em; }
+.export-copy-text:hover { background: #f1f5f9; }
+
+/* Transient "copied" confirmation, centered above the export dialog's action footer. */
+.export-toast {
+  position: absolute;
+  bottom: 4.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  padding: 0.4rem 0.8rem;
+  border-radius: 0.5rem;
+  background: #1e293b;
+  color: #fff;
+  font-size: 0.8rem;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.2);
+  pointer-events: none;
+}
 .export-body { display: flex; gap: 1rem; padding: 1.25rem; }
 .export-preview {
   position: relative;

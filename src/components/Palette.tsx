@@ -2,6 +2,7 @@ import { memo, useRef } from 'react';
 import { usePaletteStore } from '../store/paletteStore';
 import { useSignStore } from '../store/signStore';
 import { useUiStore } from '../store/uiStore';
+import { useSelectModeStore } from '../store/selectModeStore';
 import { useTranslation } from '../hooks/useTranslation';
 import { useDrag, pointInElement, seqPosition } from '../hooks/useDrag';
 import { save } from '../lib/bridge';
@@ -9,6 +10,7 @@ import { SYMBOL_NAMES } from '../i18n/symbolNames';
 import { symbolSvg, symbolSize, mirror as mirrorKey } from '../lib/sign';
 import { staticBoxes, boxOf, type Box } from '../lib/snap';
 import { snapToGuides, clearGuides } from '../lib/guides';
+import { activateSymbol } from '../lib/palette';
 import { useSymbolSvg } from '../hooks/useGlyph';
 import { HomeIcon, SaveIcon } from './icons';
 
@@ -35,8 +37,7 @@ function dropAnchor(symbolKey: string, clientX: number, clientY: number): { x: n
   };
 }
 
-const PaletteCell = memo(function PaletteCell({ symbolKey, tooltip }: { symbolKey: string; tooltip: string }) {
-  const click = usePaletteStore((s) => s.click);
+const PaletteCell = memo(function PaletteCell({ symbolKey, tooltip, focused }: { symbolKey: string; tooltip: string; focused?: boolean }) {
   const add = useSignStore((s) => s.add);
   const addSeq = useSignStore((s) => s.addSeq);
   const ghost = useRef<HTMLDivElement | null>(null);
@@ -74,7 +75,7 @@ const PaletteCell = memo(function PaletteCell({ symbolKey, tooltip }: { symbolKe
       clearGuides();
       if (!symbolKey) return;
       if (!moved) {
-        click(symbolKey);
+        activateSymbol(symbolKey); // tap: drill into the submenu, or add a leaf to the canvas center
         return;
       }
       // Drop completed — drop focus from the palette cell so keyboard shortcuts act on the sign.
@@ -91,6 +92,7 @@ const PaletteCell = memo(function PaletteCell({ symbolKey, tooltip }: { symbolKe
   return (
     <button
       type="button"
+      className={focused ? 'focused' : undefined}
       data-tip={tooltip || undefined}
       aria-label={tooltip || undefined}
       disabled={!symbolKey}
@@ -114,6 +116,9 @@ function Crumb({ symbolKey, onClick }: { symbolKey: string; onClick?: () => void
 export function Palette() {
   const { t } = useTranslation();
   const { grid, group, base, lower, mirror, top, select, toggleMirror } = usePaletteStore();
+  const selectActive = useSelectModeStore((s) => s.active);
+  const cursorRow = useSelectModeStore((s) => s.row);
+  const cursorCol = useSelectModeStore((s) => s.col);
 
   const tooltipPrefix = base ? '' : group ? 'base_' : 'group_';
   const atTop = !group && !base;
@@ -121,6 +126,16 @@ export function Palette() {
   return (
     <>
       <header className="palette-bar">
+        <button
+          type="button"
+          className={`palette-select-hint${selectActive ? ' active' : ''}`}
+          onClick={() => (selectActive ? useSelectModeStore.getState().exit() : useSelectModeStore.getState().start())}
+          data-tip={`${t('select')} (S)`}
+          aria-label={`${t('select')} (S)`}
+          aria-pressed={selectActive}
+        >
+          S
+        </button>
         <nav className="palette-crumbs" aria-label="symbol navigation">
           {!atTop && (
             <button type="button" className="crumb crumb-link" onClick={top} data-tip={t('top')} aria-label={t('top')}>
@@ -149,8 +164,14 @@ export function Palette() {
       <div className="palette-grid">
         {grid.map((row, ri) => (
           <div className="row" key={ri}>
+            {selectActive && ri < 10 && <span className="palette-num">{ri === 9 ? 0 : ri + 1}</span>}
             {row.map((key, ci) => (
-              <PaletteCell key={`${ri}-${ci}-${key}`} symbolKey={key} tooltip={tooltipPrefix && key ? (SYMBOL_NAMES[tooltipPrefix + key.slice(0, 4)] ?? '') : ''} />
+              <PaletteCell
+                key={`${ri}-${ci}-${key}`}
+                symbolKey={key}
+                tooltip={tooltipPrefix && key ? (SYMBOL_NAMES[tooltipPrefix + key.slice(0, 4)] ?? '') : ''}
+                focused={selectActive && ri === cursorRow && ci === cursorCol}
+              />
             ))}
           </div>
         ))}
@@ -158,7 +179,12 @@ export function Palette() {
 
       {mirror && (
         <footer className="palette-foot">
-          <button type="button" className={`palette-mirror clickable${lower ? ' active' : ''}`} onClick={toggleMirror}>
+          <button
+            type="button"
+            className={`palette-mirror clickable${lower ? ' active' : ''}`}
+            onClick={toggleMirror}
+            data-tip={`${lower ? 'Un-mirror' : 'Mirror'} (⇧,)`}
+          >
             {lower ? 'Un-mirror' : 'Mirror'}
           </button>
         </footer>

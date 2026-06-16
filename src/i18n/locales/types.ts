@@ -6,6 +6,7 @@ export interface Messages {
 
   undo: string;
   redo: string;
+  select: string;
   selectPrev: string;
   selectNext: string;
   center: string;
@@ -67,6 +68,7 @@ export interface Messages {
   signed: string;
   copyImage: string;
   copied: string;
+  copiedToClipboard: string;
   moveUp: string;
   moveDown: string;
   moveLeft: string;

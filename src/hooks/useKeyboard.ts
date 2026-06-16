@@ -3,6 +3,8 @@ import { useSignStore } from '../store/signStore';
 import { useUiStore } from '../store/uiStore';
 import { useLangStore } from '../store/langStore';
 import { useToolStore } from '../store/toolStore';
+import { useSelectModeStore } from '../store/selectModeStore';
+import { usePaletteStore } from '../store/paletteStore';
 import { mouthingSupported } from '../i18n/languageNames';
 import { startMove, stopMove, stopAllMoves, type Direction } from '../lib/arrowRepeat';
 import { flashButton } from '../lib/shortcuts';
@@ -30,6 +32,7 @@ const keyboard: Record<string, Check | Check[]> = {
   rotateNext: [191],
   variationBack: [190, 'shiftKey'],
   variationNext: [190],
+  paletteMirror: [188, 'shiftKey'],
   mirror: [188],
   fillBack: [78, 'shiftKey'],
   fillNext: [78],
@@ -57,12 +60,25 @@ const keyboard: Record<string, Check | Check[]> = {
     [65, 'metaKey'],
     [65, 'ctrlKey'],
   ],
+  export: [
+    [83, 'metaKey'],
+    [83, 'ctrlKey'],
+  ],
   fingerspelling: [70],
   mouthing: [77],
   translate: [84],
 };
 const PREVENT = [8, 9, 191];
 const ARROWS: Record<number, Direction> = { 37: 'left', 38: 'up', 39: 'right', 40: 'down' };
+// Palette-grid cursor deltas for select mode (row, col).
+const GRID_MOVE: Record<number, [number, number]> = { 37: [0, -1], 38: [-1, 0], 39: [0, 1], 40: [1, 0] };
+
+/** Map a digit keyCode to a palette row: 1–9 → rows 0–8, 0 → row 9. Returns -1 for non-digits. */
+function digitRow(code: number): number {
+  if (code >= 49 && code <= 57) return code - 49;
+  if (code === 48) return 9;
+  return -1;
+}
 
 // Order = priority. `tool` is the control button id suffix to flash; null = no button.
 const ACTIONS: { name: string; tool: string | null; run: (s: Store, ui: Ui) => void }[] = [
@@ -76,6 +92,14 @@ const ACTIONS: { name: string; tool: string | null; run: (s: Store, ui: Ui) => v
   { name: 'rotateNext', tool: 'rotateCW', run: (s) => s.rotate(1) },
   { name: 'variationBack', tool: 'variationPrev', run: (s) => s.variation(-1) },
   { name: 'variationNext', tool: 'variationNext', run: (s) => s.variation(1) },
+  {
+    name: 'paletteMirror',
+    tool: null,
+    run: () => {
+      const p = usePaletteStore.getState();
+      if (p.mirror) p.toggleMirror();
+    },
+  },
   { name: 'mirror', tool: 'mirror', run: (s) => s.mirror() },
   { name: 'fillBack', tool: 'fillPrev', run: (s) => s.fill(-1) },
   { name: 'fillNext', tool: 'fillNext', run: (s) => s.fill(1) },
@@ -85,6 +109,7 @@ const ACTIONS: { name: string; tool: string | null; run: (s: Store, ui: Ui) => v
   { name: 'bringFront', tool: 'over', run: (s) => s.over() },
   { name: 'sendBack', tool: null, run: (s) => s.under() },
   { name: 'selectAll', tool: null, run: (s) => s.selectAll() },
+  { name: 'export', tool: 'export', run: (_s, ui) => ui.set({ tab: 'png' }) },
   {
     name: 'fingerspelling',
     tool: null,
@@ -137,13 +162,44 @@ export function useKeyboard(): void {
       if (isTyping(event.target)) return;
       // A modal dialog owns its keys — let Escape close it natively, and don't run shortcuts behind it.
       if (document.querySelector('dialog[open]')) return;
+
+      const select = useSelectModeStore.getState();
+      if (select.active) {
+        // Select mode: the arrow keys drive the palette cursor; other shortcuts are suppressed.
+        const grid = GRID_MOVE[event.keyCode];
+        if (grid) {
+          select.move(grid[0], grid[1]);
+          event.preventDefault();
+          return;
+        }
+        if (event.repeat) return;
+        if (event.keyCode === 13) select.press(); // Enter
+        else if (event.keyCode === 8) select.back(); // Backspace steps up a level
+        else if (event.keyCode === 27 || event.keyCode === 83) select.exit(); // Escape / S toggles off
+        else if (event.keyCode === 188 && event.shiftKey) {
+          const p = usePaletteStore.getState(); // Shift+, flips the palette, same as outside select mode
+          if (p.mirror) p.toggleMirror();
+        } else {
+          const row = digitRow(event.keyCode);
+          if (row >= 0) select.enterRow(row);
+        }
+        event.preventDefault();
+        return;
+      }
+
       const dir = ARROWS[event.keyCode];
       if (dir) {
-        startMove(dir, event.shiftKey);
+        // Arrows nudge the selection; with nothing selected the pad is inert (but still no page scroll).
+        if (useSignStore.getState().list.some((s) => s.selected)) startMove(dir, event.shiftKey);
         event.preventDefault();
         return;
       }
       if (event.repeat) return;
+      if (event.keyCode === 83 && !event.metaKey && !event.ctrlKey && !event.altKey) {
+        useSelectModeStore.getState().start();
+        event.preventDefault();
+        return;
+      }
       for (const action of ACTIONS) {
         if (!matches(event, action.name)) continue;
         action.run(useSignStore.getState(), useUiStore.getState());

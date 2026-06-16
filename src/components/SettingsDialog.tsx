@@ -24,7 +24,7 @@ export function SettingsDialog({ dialogRef }: { dialogRef: RefObject<HTMLDialogE
   const skinSeg = (sk: Skin) => (ui.skin === sk || (sk === '' && !ui.skin) ? PILL_ACTIVE : PILL);
 
   return (
-    <dialog ref={dialogRef} className="settings-dialog">
+    <dialog ref={dialogRef} className="settings-dialog" onClose={() => ui.set({ tab: '' })}>
       <header className="export-header">
         <h2><Sign text={t('settings')} /></h2>
         <button type="button" className="dialog-close" aria-label={t('cancel')} onClick={() => dialogRef.current?.close()}>

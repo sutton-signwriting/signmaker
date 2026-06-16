@@ -52,13 +52,34 @@ test.describe('URL parameters', () => {
     await expect(page.locator('.export-tab-active')).toHaveText(/SVG/);
   });
 
-  test('Export button opens a dialog with PNG/SVG options', async ({ page }) => {
+  test('Export button opens a dialog with PNG/SVG and FSW/SWU options', async ({ page }) => {
     await page.goto(`/index.html#?fsw=${encoded}`);
     await waitForApp(page);
     await page.locator('#tool-export').click();
     await expect(page.locator('dialog.export-dialog')).toBeVisible();
     await expect(page.locator('.export-preview-img svg')).toHaveCount(1);
-    await expect(page.locator('.export-formats button')).toHaveCount(2);
+    await expect(page.locator('.export-formats button')).toHaveCount(4); // PNG, SVG, FSW, SWU
+  });
+
+  test('Cmd+S opens the export dialog and is repeatable', async ({ page }) => {
+    await page.goto(`/index.html#?fsw=${encoded}`);
+    await waitForApp(page);
+    await page.keyboard.press('Meta+s');
+    await expect(page.locator('dialog.export-dialog')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('dialog.export-dialog')).toBeHidden();
+    await page.keyboard.press('Meta+s');
+    await expect(page.locator('dialog.export-dialog')).toBeVisible();
+  });
+
+  test('FSW/SWU buttons copy to the clipboard and show a toast', async ({ page, context }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await page.goto(`/index.html#?fsw=${encoded}`);
+    await waitForApp(page);
+    await page.locator('#tool-export').click();
+    await page.locator('.export-copy-text', { hasText: 'FSW' }).click();
+    await expect(page.locator('.export-toast')).toBeVisible();
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(SYMBOL_PATTERN);
   });
 
   test('grid=0 draws no grid lines', async ({ page }) => {

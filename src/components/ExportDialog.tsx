@@ -35,8 +35,10 @@ export function ExportDialog({ dialogRef }: { dialogRef: RefObject<HTMLDialogEle
   const { t } = useTranslation();
   const ui = useUiStore();
   const fswnorm = useSignStore((s) => s.fswnorm());
+  const swunorm = useSignStore((s) => s.swunorm());
   const [format, setFormat] = useState<Format>('png');
   const [copied, setCopied] = useState(false);
+  const [toast, setToast] = useState('');
   useLightDismiss(dialogRef);
 
   useEffect(() => {
@@ -63,10 +65,15 @@ export function ExportDialog({ dialogRef }: { dialogRef: RefObject<HTMLDialogEle
     window.setTimeout(() => setCopied(false), 1200);
   };
 
+  const copyText = async (text: string) => {
+    await navigator.clipboard.writeText(text);
+    setToast(t('copiedToClipboard'));
+    window.setTimeout(() => setToast(''), 1500);
+  };
+
   return (
-    <dialog ref={dialogRef} className="export-dialog">
+    <dialog ref={dialogRef} className="export-dialog" aria-label={t('download')} onClose={() => ui.set({ tab: '' })}>
       <header className="export-header">
-        <h2><Sign text={t('download')} /></h2>
         <div className="export-formats">
           <button type="button" className={seg(format === 'png')} onClick={() => setFormat('png')}>
             <Sign text={t('pngImage')} />
@@ -74,8 +81,20 @@ export function ExportDialog({ dialogRef }: { dialogRef: RefObject<HTMLDialogEle
           <button type="button" className={seg(format === 'svg')} onClick={() => setFormat('svg')}>
             <Sign text={t('svgImage')} />
           </button>
+          <button type="button" className="export-tab export-copy-text" onClick={() => copyText(fswnorm)}>
+            <CopyIcon /> FSW
+          </button>
+          <button type="button" className="export-tab export-copy-text" onClick={() => copyText(swunorm)}>
+            <CopyIcon /> SWU
+          </button>
         </div>
       </header>
+
+      {toast && (
+        <div className="export-toast" role="status">
+          {toast}
+        </div>
+      )}
 
       <div className="export-body">
         <div className="export-preview">
