@@ -647,13 +647,22 @@ html,body {
 }
 
 /* On a narrow signbox the centered 500-unit box reaches the left edge, so the vertically-centered
-   edit controls would sit on top of it. Lift them into a horizontal row just above the box. */
+   edit controls would sit on top of it. Lift them into a horizontal row above the box. Hug the box
+   when there's room, but on a short signbox the box top sits near the top edge, so clamp the band
+   below the (possibly folded two-row) corner clusters to keep it off the undo/redo/delete buttons. */
 @container (max-width: 740px) {
   .canvas-edit {
+    /* The 500px valid box is vertically centered, so its top edge is half its height above center. */
+    --box-top: calc(50% - (500px / 2));
+    /* Bottom of the folded corner clusters: 8px inset + two 34px button rows + 4px gap + breathing room. */
+    --corner-tools-bottom: calc(8px + (2 * 34px) + 4px + 12px);
+    /* Tallest the wrapped band gets: two 42px edit sections + the 8px gap between them, plus slack. */
+    --band-height: calc((2 * 42px) + 8px + 4px);
+
     left: 0;
     right: 0;
-    top: calc(50% - 250px);
-    transform: translateY(calc(-100% - 8px));
+    top: max(var(--corner-tools-bottom), calc(var(--box-top) - var(--band-height)));
+    transform: none;
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
