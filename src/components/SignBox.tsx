@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
 import { useSignStore } from '../store/signStore';
 import { useUiStore } from '../store/uiStore';
 import { useGuideStore } from '../store/guideStore';
@@ -23,47 +23,74 @@ interface Mid {
 function useMid(boxRef: RefObject<HTMLDivElement | null>, symbols: Sym[]): Mid {
   const [mid, setMid] = useState<Mid>({ w: 0, h: 0, clientW: 0, clientH: 0 });
   const fontsReady = useFontStore((s) => s.ready);
+  const symbolsRef = useRef(symbols);
+  symbolsRef.current = symbols;
 
+  const measure = useCallback(() => {
+    const el = boxRef.current;
+    if (!el) return;
+    const clientW = el.clientWidth;
+    const clientH = el.clientHeight;
+    let w = Math.round(clientW / 2);
+    let h = Math.round(clientH / 2);
+    const box = extent(symbolsRef.current);
+    if (box) {
+      if (box[0] < 510 - w || box[1] > 490 + w) w = w + 500 - Math.round((box[0] + box[1]) / 2);
+      if (box[2] < 510 - h || box[3] > 490 + h) h = h + 500 - Math.round((box[2] + box[3]) / 2);
+    }
+    // Bail when nothing changed so an unrelated store update doesn't trigger a re-render.
+    setMid((prev) => (prev.w === w && prev.h === h && prev.clientW === clientW && prev.clientH === clientH ? prev : { w, h, clientW, clientH }));
+  }, [boxRef]);
+
+  // Observe the box once; the ResizeObserver outlives symbol/font changes instead of churning per edit.
   useLayoutEffect(() => {
     const el = boxRef.current;
     if (!el) return;
-    const measure = () => {
-      const clientW = el.clientWidth;
-      const clientH = el.clientHeight;
-      let w = Math.round(clientW / 2);
-      let h = Math.round(clientH / 2);
-      const box = extent(symbols);
-      if (box) {
-        if (box[0] < 510 - w || box[1] > 490 + w) w = w + 500 - Math.round((box[0] + box[1]) / 2);
-        if (box[2] < 510 - h || box[3] > 490 + h) h = h + 500 - Math.round((box[2] + box[3]) / 2);
-      }
-      setMid({ w, h, clientW, clientH });
-    };
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(el);
     return () => ro.disconnect();
-    // Symbol sizes come from the SignWriting fonts, so re-measure once they load.
-  }, [boxRef, symbols, fontsReady]);
+  }, [measure]);
+
+  // Symbol sizes come from the SignWriting fonts, so re-measure when symbols change or the fonts load.
+  useLayoutEffect(() => {
+    measure();
+  }, [symbols, fontsReady, measure]);
 
   return mid;
 }
 
 /** A placed symbol — drags itself (or, if part of a multi-selection, the whole group). */
 function DraggableSymbol({ sym, index, mid }: { sym: Sym; index: number; mid: Mid }) {
-  const last = useRef({ x: 0, y: 0 });
   // Captured at drag start so snapping measures the moving group and the stationary symbols once.
   const startBox = useRef<Box | null>(null);
   const boxes = useRef<Box[]>([]);
+  // The DOM nodes of the selected group, moved by transform during the drag (no React re-render,
+  // no left/top layout) and committed to the store only on drop — this is what keeps dragging smooth.
+  const nodes = useRef<HTMLElement[]>([]);
+  const offset = useRef({ x: 0, y: 0 });
+
+  const paint = (x: number, y: number) => {
+    offset.current = { x, y };
+    const t = `translate3d(${x}px, ${y}px, 0)`;
+    for (const n of nodes.current) n.style.transform = t;
+  };
 
   const drag = useDrag({
     onStart: () => {
-      last.current = { x: 0, y: 0 };
       useSelectModeStore.getState().exit(); // grabbing a canvas symbol leaves keyboard select mode
-      if (!useSignStore.getState().list[index]?.selected) useSignStore.getState().selectOnly(index);
+      const store = useSignStore.getState();
+      if (!store.list[index]?.selected) store.selectOnly(index);
       const list = useSignStore.getState().list;
       startBox.current = unionBox(list.filter((s) => s.selected));
       boxes.current = staticBoxes(list.filter((s) => !s.selected));
+      offset.current = { x: 0, y: 0 };
+      // Selection just changed in the store; the .selected class lands on the next render, so map by
+      // index instead. The nodes already exist in the DOM with their data-index.
+      const root = document.getElementById('signbox');
+      nodes.current = list
+        .map((s, i) => (s.selected ? root?.querySelector<HTMLElement>(`.signbox-symbol[data-index="${i}"]`) : null))
+        .filter((n): n is HTMLElement => !!n);
     },
     onMove: ({ dx, dy }) => {
       const box = startBox.current;
@@ -71,20 +98,20 @@ function DraggableSymbol({ sym, index, mid }: { sym: Sym; index: number; mid: Mi
       const desiredX = Math.round(dx);
       const desiredY = Math.round(dy);
       const { dx: sdx, dy: sdy } = snapToGuides(shift(box, desiredX, desiredY), boxes.current);
-      const totalX = Math.round(desiredX + sdx);
-      const totalY = Math.round(desiredY + sdy);
-      useSignStore.getState().nudge(totalX - last.current.x, totalY - last.current.y);
-      last.current = { x: totalX, y: totalY };
+      paint(Math.round(desiredX + sdx), Math.round(desiredY + sdy));
     },
     onEnd: ({ clientX, clientY, moved }) => {
       clearGuides();
+      const { x, y } = offset.current;
+      for (const n of nodes.current) n.style.transform = '';
+      nodes.current = [];
       const store = useSignStore.getState();
       if (!moved) {
         store.selectOnly(index);
       } else if (pointInElement('sequence', clientX, clientY)) {
-        store.nudge(-last.current.x, -last.current.y); // snap back into the signbox
-        store.addSeq(sym.key, seqPosition(clientY));
+        store.addSeq(sym.key, seqPosition(clientY)); // stays in the signbox; transform already reset
       } else {
+        store.nudge(x, y);
         store.commit();
       }
     },
@@ -93,6 +120,7 @@ function DraggableSymbol({ sym, index, mid }: { sym: Sym; index: number; mid: Mi
   return (
     <div
       className={`signbox-symbol${sym.selected ? ' selected' : ''}`}
+      data-index={index}
       style={{ left: `${sym.x - 500 + mid.w}px`, top: `${sym.y - 500 + mid.h}px` }}
       onPointerDown={(e) => {
         e.stopPropagation();
