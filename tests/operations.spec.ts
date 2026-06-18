@@ -50,6 +50,41 @@ test.describe('symbol operations', () => {
     expect(await fswlive(page)).not.toBe(before);
   });
 
+  // The signbox is 1:1, so one symbol unit is one screen pixel.
+  test('a single arrow key press moves exactly one step (not two)', async ({ page }) => {
+    await vm(page, 'add', { key: 'S10000', x: 500, y: 500 });
+    const sym = page.locator('#signbox .signbox-symbol').first();
+    const b0 = (await sym.boundingBox())!;
+    await page.keyboard.press('ArrowRight');
+    const b1 = (await sym.boundingBox())!;
+    expect(b1.x - b0.x).toBe(1); // one press, one pixel — never doubled
+  });
+
+  test('a single on-screen arrow-button tap moves exactly one step', async ({ page }) => {
+    await vm(page, 'add', { key: 'S10000', x: 500, y: 500 });
+    const sym = page.locator('#signbox .signbox-symbol').first();
+    const b0 = (await sym.boundingBox())!;
+    await page.locator('#arrow-right').click();
+    const b1 = (await sym.boundingBox())!;
+    expect(b1.x - b0.x).toBe(1);
+  });
+
+  test('holding an arrow button repeats, then stops cleanly on release', async ({ page }) => {
+    await vm(page, 'add', { key: 'S10000', x: 500, y: 500 });
+    const sym = page.locator('#signbox .signbox-symbol').first();
+    const b0 = (await sym.boundingBox())!;
+    const btn = (await page.locator('#arrow-right').boundingBox())!;
+    await page.mouse.move(btn.x + btn.width / 2, btn.y + btn.height / 2);
+    await page.mouse.down();
+    await page.waitForTimeout(450); // past the initial hold delay, into the fast repeat
+    await page.mouse.up();
+    const held = (await sym.boundingBox())!;
+    expect(held.x - b0.x).toBeGreaterThan(1); // repeat kicked in
+    await page.waitForTimeout(200);
+    const settled = (await sym.boundingBox())!;
+    expect(settled.x).toBe(held.x); // no stuck timer after release
+  });
+
   test('undo and redo step through history', async ({ page }) => {
     await vm(page, 'add', { key: 'S10000', x: 500, y: 500 });
     await vm(page, 'add', { key: 'S10010', x: 510, y: 490 });
