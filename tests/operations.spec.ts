@@ -100,6 +100,16 @@ test.describe('symbol operations', () => {
     await expect(page.locator('.palette-num')).toHaveCount(0); // select mode exited
   });
 
+  test('Space activates a cell in select mode, like Enter', async ({ page }) => {
+    await page.keyboard.press('s');
+    await page.keyboard.press('Space'); // top -> group
+    await expect(page.locator('.palette-crumbs .crumb')).not.toHaveCount(0);
+    await page.keyboard.press('Space'); // group -> base
+    await page.keyboard.press('Space'); // leaf -> add centered and exit
+    await expect(page.locator('#signbox .signbox-symbol')).toHaveCount(1);
+    await expect(page.locator('.palette-num')).toHaveCount(0);
+  });
+
   test('clicking a leaf symbol (no submenu) adds it to the canvas', async ({ page }) => {
     const first = () => page.locator('#palette .row button:not([disabled])').first();
     await first().click(); // top -> group
