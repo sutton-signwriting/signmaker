@@ -173,7 +173,7 @@ export function useKeyboard(): void {
           return;
         }
         if (event.repeat) return;
-        if (event.keyCode === 13) select.press(); // Enter
+        if (event.keyCode === 13 || event.keyCode === 32) select.press(); // Enter / Space
         else if (event.keyCode === 8) select.back(); // Backspace steps up a level
         else if (event.keyCode === 27 || event.keyCode === 83) select.exit(); // Escape / S toggles off
         else if (event.keyCode === 188 && event.shiftKey) {
