@@ -6,7 +6,7 @@ import { useToolStore } from '../store/toolStore';
 import { useSelectModeStore } from '../store/selectModeStore';
 import { usePaletteStore } from '../store/paletteStore';
 import { mouthingSupported } from '../i18n/languageNames';
-import { startMove, stopMove, stopAllMoves, type Direction } from '../lib/arrowRepeat';
+import { keyDown, keyUp, stopAllMoves, type Direction } from '../lib/arrowRepeat';
 import { flashButton } from '../lib/shortcuts';
 
 type Store = ReturnType<typeof useSignStore.getState>;
@@ -189,8 +189,9 @@ export function useKeyboard(): void {
 
       const dir = ARROWS[event.keyCode];
       if (dir) {
-        // Arrows nudge the selection; with nothing selected the pad is inert (but still no page scroll).
-        if (useSignStore.getState().list.some((s) => s.selected)) startMove(dir, event.shiftKey);
+        // Arrows nudge the selection; the OS drives the repeat cadence (one move, pause, then fast).
+        // With nothing selected the pad is inert (but still no page scroll).
+        if (useSignStore.getState().list.some((s) => s.selected)) keyDown(dir, event.shiftKey);
         event.preventDefault();
         return;
       }
@@ -211,9 +212,11 @@ export function useKeyboard(): void {
     };
 
     const onKeyUp = (event: KeyboardEvent) => {
+      // Process arrow keyups unconditionally — gating on focus could drop a keyup (e.g. refocused
+      // into an input mid-press) and leave a key marked held.
       const dir = ARROWS[event.keyCode];
-      if (dir && !isTyping(event.target)) {
-        stopMove(dir);
+      if (dir) {
+        keyUp(dir);
         event.preventDefault();
       }
     };
