@@ -27,11 +27,17 @@ function show(target: HTMLElement): void {
   }
   bubble.style.display = 'block';
   const r = target.getBoundingClientRect();
+  const pos = target.getAttribute('data-tip-pos');
   let left: number;
   let top: number;
-  if (target.getAttribute('data-tip-pos') === 'right') {
+  if (pos === 'right') {
     left = r.right + 8;
     top = r.top + r.height / 2 - bubble.offsetHeight / 2;
+  } else if (pos === 'between') {
+    // Straddle the cell's top edge — half above the row line, half below — so it reads as sitting in
+    // the gap without floating above the whole palette or covering the hovered symbol.
+    left = r.left + r.width / 2 - bubble.offsetWidth / 2;
+    top = r.top - bubble.offsetHeight / 2;
   } else {
     left = r.left + r.width / 2 - bubble.offsetWidth / 2;
     top = r.top - bubble.offsetHeight - 6;
@@ -41,6 +47,13 @@ function show(target: HTMLElement): void {
   top = Math.max(4, Math.min(top, window.innerHeight - bubble.offsetHeight - 4));
   bubble.style.left = `${left}px`;
   bubble.style.top = `${top}px`;
+}
+
+/** Show (or, with null, hide) the tooltip for an element directly — used by keyboard select mode,
+ *  which moves a virtual cursor instead of firing real hover/focus events. */
+export function showTooltip(target: HTMLElement | null): void {
+  if (!target) return hide();
+  show(target);
 }
 
 /** Instant, portal-based tooltips: any element with [data-tip] shows its text on hover or focus. */
