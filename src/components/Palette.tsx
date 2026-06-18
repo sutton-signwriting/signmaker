@@ -1,4 +1,4 @@
-import { memo, useRef } from 'react';
+import { memo, useEffect, useRef } from 'react';
 import { usePaletteStore } from '../store/paletteStore';
 import { useSignStore } from '../store/signStore';
 import { useUiStore } from '../store/uiStore';
@@ -11,6 +11,7 @@ import { symbolSvg, symbolSize, mirror as mirrorKey } from '../lib/sign';
 import { staticBoxes, boxOf, type Box } from '../lib/snap';
 import { snapToGuides, clearGuides } from '../lib/guides';
 import { activateSymbol } from '../lib/palette';
+import { showTooltip } from '../lib/tooltip';
 import { useSymbolSvg } from '../hooks/useGlyph';
 import { HomeIcon, SaveIcon } from './icons';
 
@@ -94,6 +95,7 @@ const PaletteCell = memo(function PaletteCell({ symbolKey, tooltip, focused }: {
       type="button"
       className={focused ? 'focused' : undefined}
       data-tip={tooltip || undefined}
+      data-tip-pos="between"
       aria-label={tooltip || undefined}
       disabled={!symbolKey}
       onPointerDown={symbolKey ? onPointerDown : undefined}
@@ -122,6 +124,13 @@ export function Palette() {
 
   const tooltipPrefix = base ? '' : group ? 'base_' : 'group_';
   const atTop = !group && !base;
+
+  // In select mode the cursor is virtual (no real hover/focus), so surface the focused cell's tooltip.
+  useEffect(() => {
+    if (!selectActive) return;
+    showTooltip(document.querySelector<HTMLElement>('#palette .row button.focused'));
+    return () => showTooltip(null);
+  }, [selectActive, cursorRow, cursorCol, group, base, grid]);
 
   return (
     <>
