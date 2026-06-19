@@ -1,23 +1,24 @@
 @import "tailwindcss";
 
-/* SignWriting fonts shipped by @sutton-signwriting/font-ttf (bundled by Vite); layout ported from legacy/index.css. */
+/* SignWriting fonts as WOFF2 (converted from @sutton-signwriting/font-ttf, ~76% smaller than the
+   shipped TTFs). To regenerate after a font-ttf bump: woff2_compress each font/*.ttf into src/fonts/. */
 @font-face {
   font-family: "SuttonSignWritingLine";
   src:
     local('SuttonSignWritingLine'),
-    url('@sutton-signwriting/font-ttf/font/SuttonSignWritingLine.ttf') format('truetype');
+    url('./fonts/SuttonSignWritingLine.woff2') format('woff2');
 }
 @font-face {
   font-family: "SuttonSignWritingFill";
   src:
     local('SuttonSignWritingFill'),
-    url('@sutton-signwriting/font-ttf/font/SuttonSignWritingFill.ttf') format('truetype');
+    url('./fonts/SuttonSignWritingFill.woff2') format('woff2');
 }
 @font-face {
   font-family: "SuttonSignWritingOneD";
   src:
     local('SuttonSignWritingOneD'),
-    url('@sutton-signwriting/font-ttf/font/SuttonSignWritingOneD.ttf') format('truetype');
+    url('./fonts/SuttonSignWritingOneD.woff2') format('woff2');
 }
 svg {
   overflow: visible;
