@@ -13,6 +13,8 @@ export interface UiState {
   tab: Tab;
   /** Mobile only: whether the palette overlay drawer is open. */
   paletteOpen: boolean;
+  /** Transient: hold ⌘/Ctrl alone to reveal every tool's keyboard shortcut. Never persisted to the URL. */
+  learnShortcuts: boolean;
 
   size: string;
   pad: string;
@@ -35,6 +37,7 @@ export const useUiStore = create<UiState>((set) => ({
   skin: '',
   tab: '',
   paletteOpen: false,
+  learnShortcuts: false,
 
   size: '1',
   pad: '0',

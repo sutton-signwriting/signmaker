@@ -8,7 +8,7 @@ export const HINTS: Record<string, string> = {
   undo: `${MOD}Z`,
   redo: isMac ? '⌘⇧Z' : 'Ctrl+Shift+Z',
   delete: '⌫',
-  center: `${MOD}Home`,
+  center: `${MOD}⌂`,
   mirror: ',',
   rotateCCW: '?',
   rotateCW: '/',

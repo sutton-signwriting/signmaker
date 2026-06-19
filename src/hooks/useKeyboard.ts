@@ -156,12 +156,34 @@ function matches(event: KeyboardEvent, name: string): boolean {
 
 export function useKeyboard(): void {
   useEffect(() => {
+    // Hold ⌘/Ctrl alone for a beat to reveal every tool's shortcut (a way to learn them).
+    let learnTimer: number | undefined;
+    const cancelLearn = () => {
+      if (learnTimer !== undefined) {
+        clearTimeout(learnTimer);
+        learnTimer = undefined;
+      }
+      if (useUiStore.getState().learnShortcuts) useUiStore.getState().set({ learnShortcuts: false });
+    };
+
     // Actions run on keydown — keyup doesn't fire for keys held with ⌘ on macOS, which broke
     // ⌘-shortcuts like recenter/undo/redo. Arrows repeat (startMove dedupes); others ignore repeats.
     const onKeyDown = (event: KeyboardEvent) => {
       if (isTyping(event.target)) return;
       // A modal dialog owns its keys — let Escape close it natively, and don't run shortcuts behind it.
       if (document.querySelector('dialog[open]')) return;
+
+      if (event.key === 'Meta' || event.key === 'Control') {
+        // The modifier alone: arm the reveal. Any other key (below) cancels it and runs normally.
+        if (!event.repeat && !event.shiftKey && !event.altKey && learnTimer === undefined) {
+          learnTimer = window.setTimeout(() => {
+            learnTimer = undefined;
+            useUiStore.getState().set({ learnShortcuts: true });
+          }, 1000);
+        }
+        return;
+      }
+      cancelLearn();
 
       const select = useSelectModeStore.getState();
       if (select.active) {
@@ -212,6 +234,7 @@ export function useKeyboard(): void {
     };
 
     const onKeyUp = (event: KeyboardEvent) => {
+      if (event.key === 'Meta' || event.key === 'Control') cancelLearn(); // releasing ⌘ hides the reveal
       // Process arrow keyups unconditionally — gating on focus could drop a keyup (e.g. refocused
       // into an input mid-press) and leave a key marked held.
       const dir = ARROWS[event.keyCode];
@@ -221,13 +244,19 @@ export function useKeyboard(): void {
       }
     };
 
+    const onBlur = () => {
+      cancelLearn();
+      stopAllMoves();
+    };
+
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
-    window.addEventListener('blur', stopAllMoves);
+    window.addEventListener('blur', onBlur);
     return () => {
       window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('keyup', onKeyUp);
-      window.removeEventListener('blur', stopAllMoves);
+      window.removeEventListener('blur', onBlur);
+      cancelLearn();
     };
   }, []);
 }

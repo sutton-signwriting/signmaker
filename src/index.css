@@ -37,6 +37,26 @@ svg {
   pointer-events: none;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
+/* Shortcut-learning overlay: badges pinned over every tool while ⌘/Ctrl is held. */
+.shortcut-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+}
+.shortcut-badge {
+  position: fixed;
+  transform: translate(-50%, -50%);
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
 /* ASL tooltips/labels are SignWriting signs (black on transparent) — show on white. */
 .tip-bubble.tip-sign {
   background: #fff;
