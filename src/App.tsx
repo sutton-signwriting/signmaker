@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { SignMaker } from './components/SignMaker';
 import { Palette } from './components/Palette';
+import { ShortcutOverlay } from './components/ShortcutOverlay';
 import { useUiStore } from './store/uiStore';
 import { useSignStore } from './store/signStore';
 import { usePaletteStore } from './store/paletteStore';
@@ -59,6 +60,7 @@ export function App() {
       <div id="palette" className={paletteOpen ? 'open' : ''}>
         <Palette />
       </div>
+      <ShortcutOverlay />
     </>
   );
 }
