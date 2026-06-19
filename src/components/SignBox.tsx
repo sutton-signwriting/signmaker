@@ -68,10 +68,8 @@ function DraggableSymbol({ sym, index, mid }: { sym: Sym; index: number; mid: Mi
   // The DOM nodes of the selected group, moved by transform during the drag (no React re-render,
   // no left/top layout) and committed to the store only on drop — this is what keeps dragging smooth.
   const nodes = useRef<HTMLElement[]>([]);
-  const offset = useRef({ x: 0, y: 0 });
 
   const paint = (x: number, y: number) => {
-    offset.current = { x, y };
     const t = `translate3d(${x}px, ${y}px, 0)`;
     for (const n of nodes.current) n.style.transform = t;
   };
@@ -84,7 +82,6 @@ function DraggableSymbol({ sym, index, mid }: { sym: Sym; index: number; mid: Mi
       const list = useSignStore.getState().list;
       startBox.current = unionBox(list.filter((s) => s.selected));
       boxes.current = staticBoxes(list.filter((s) => !s.selected));
-      offset.current = { x: 0, y: 0 };
       // Selection just changed in the store; the .selected class lands on the next render, so map by
       // index instead. The nodes already exist in the DOM with their data-index.
       const root = document.getElementById('signbox');
@@ -100,18 +97,23 @@ function DraggableSymbol({ sym, index, mid }: { sym: Sym; index: number; mid: Mi
       const { dx: sdx, dy: sdy } = snapToGuides(shift(box, desiredX, desiredY), boxes.current);
       paint(Math.round(desiredX + sdx), Math.round(desiredY + sdy));
     },
-    onEnd: ({ clientX, clientY, moved }) => {
-      clearGuides();
-      const { x, y } = offset.current;
+    onEnd: ({ clientX, clientY, dx, dy, moved }) => {
+      const box = startBox.current;
       for (const n of nodes.current) n.style.transform = '';
       nodes.current = [];
       const store = useSignStore.getState();
-      if (!moved) {
+      if (!moved || !box) {
+        clearGuides();
         store.selectOnly(index);
       } else if (pointInElement('sequence', clientX, clientY)) {
+        clearGuides();
         store.addSeq(sym.key, seqPosition(clientY)); // stays in the signbox; transform already reset
       } else {
-        store.nudge(x, y);
+        // Recompute from the release delta so the drop is exact even if the last frame's flush was
+        // coalesced away by pointerup.
+        const { dx: sdx, dy: sdy } = snapToGuides(shift(box, Math.round(dx), Math.round(dy)), boxes.current);
+        clearGuides();
+        store.nudge(Math.round(dx + sdx), Math.round(dy + sdy));
         store.commit();
       }
     },
@@ -199,9 +201,13 @@ export function SignBox() {
     const sizes = list.map((s) => symbolSize(s.key));
     selnone();
 
-    const move = (ev: PointerEvent) => {
-      const cx = ev.clientX - r.left;
-      const cy = ev.clientY - r.top;
+    // Coalesce to one update per frame — the hit-test + selection store write shouldn't run on
+    // every queued pointermove (see useDrag for the same reasoning).
+    let cx = sx;
+    let cy = sy;
+    let raf = 0;
+    const flush = () => {
+      raf = 0;
       const x0 = Math.min(sx, cx);
       const y0 = Math.min(sy, cy);
       const x1 = Math.max(sx, cx);
@@ -217,13 +223,19 @@ export function SignBox() {
       selectIndices(indices);
       if (indices.length) useSelectModeStore.getState().exit(); // rubber-band selection leaves select mode
     };
+    const move = (ev: PointerEvent) => {
+      cx = ev.clientX - r.left;
+      cy = ev.clientY - r.top;
+      if (raf === 0) raf = requestAnimationFrame(flush);
+    };
     const up = () => {
+      if (raf !== 0) cancelAnimationFrame(raf);
       window.removeEventListener('pointermove', move);
       window.removeEventListener('pointerup', up);
       setRubber(null);
     };
-    window.addEventListener('pointermove', move);
-    window.addEventListener('pointerup', up);
+    window.addEventListener('pointermove', move, { passive: true });
+    window.addEventListener('pointerup', up, { passive: true });
   };
 
   return (

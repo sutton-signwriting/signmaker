@@ -28,21 +28,39 @@ export function useDrag(handlers: DragHandlers): (e: ReactPointerEvent) => void 
     state.current = { x: e.clientX, y: e.clientY, el, moved: false };
     handlers.onStart?.();
 
+    // Coalesce moves to one flush per frame: pointermove can fire many times between paints
+    // (high-Hz pointers, or events queued while the main thread is busy — e.g. over a playing
+    // video in an iframe). Doing the snap + render work once per frame keeps dragging smooth.
+    let lastX = e.clientX;
+    let lastY = e.clientY;
+    let raf = 0;
+
+    const flush = () => {
+      raf = 0;
+      const s = state.current;
+      if (!s) return;
+      const dx = lastX - s.x;
+      const dy = lastY - s.y;
+      if (handlers.ghost && s.moved) s.el.style.transform = `translate(${dx}px, ${dy}px)`;
+      handlers.onMove?.({ dx, dy, clientX: lastX, clientY: lastY, moved: s.moved });
+    };
+
     const move = (ev: PointerEvent) => {
       const s = state.current;
       if (!s) return;
-      const dx = ev.clientX - s.x;
-      const dy = ev.clientY - s.y;
-      if (!s.moved && Math.abs(dx) + Math.abs(dy) > THRESHOLD) {
+      lastX = ev.clientX;
+      lastY = ev.clientY;
+      // The threshold flip is cheap and must be exact (it decides click vs drag), so do it eagerly.
+      if (!s.moved && Math.abs(lastX - s.x) + Math.abs(lastY - s.y) > THRESHOLD) {
         s.moved = true;
         if (handlers.ghost) s.el.classList.add('dragging');
       }
-      if (handlers.ghost && s.moved) s.el.style.transform = `translate(${dx}px, ${dy}px)`;
-      handlers.onMove?.({ dx, dy, clientX: ev.clientX, clientY: ev.clientY, moved: s.moved });
+      if (raf === 0) raf = requestAnimationFrame(flush);
     };
 
     const up = (ev: PointerEvent) => {
       const s = state.current;
+      if (raf !== 0) cancelAnimationFrame(raf);
       window.removeEventListener('pointermove', move);
       window.removeEventListener('pointerup', up);
       window.removeEventListener('pointercancel', up);
@@ -61,11 +79,13 @@ export function useDrag(handlers: DragHandlers): (e: ReactPointerEvent) => void 
       });
     };
 
-    window.addEventListener('pointermove', move);
-    window.addEventListener('pointerup', up);
+    // Passive: these handlers never call preventDefault (touch-action:none on the targets stops
+    // scroll), so the browser needn't block on them — lower input latency.
+    window.addEventListener('pointermove', move, { passive: true });
+    window.addEventListener('pointerup', up, { passive: true });
     // Touch browsers fire pointercancel when they reclaim the gesture (e.g. for scrolling);
     // treat it as a drop so listeners and ghosts don't leak.
-    window.addEventListener('pointercancel', up);
+    window.addEventListener('pointercancel', up, { passive: true });
   };
 
   return onPointerDown;
