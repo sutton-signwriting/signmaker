@@ -4,7 +4,7 @@
   font-family: "SuttonSignWritingOneD";
   src:
     local('SuttonSignWritingOneD'),
-    url('@sutton-signwriting/font-ttf/font/SuttonSignWritingOneD.ttf') format('truetype');
+    url('./fonts/SuttonSignWritingOneD.woff2') format('woff2');
 }
 
 .swu {

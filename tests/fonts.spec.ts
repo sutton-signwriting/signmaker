@@ -1,7 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { waitForApp } from './support';
 
-const SIGNWRITING_FONTS = ['SuttonSignWritingLine', 'SuttonSignWritingFill', 'SuttonSignWritingOneD'];
+// Only the glyph fonts (Line + Fill) load eagerly; OneD is deferred (Settings-only) to save ~8MB.
+const SIGNWRITING_FONTS = ['SuttonSignWritingLine', 'SuttonSignWritingFill'];
 
 test.describe('SignWriting fonts', () => {
   // Regression: font-ttf renders empty glyphs until the SignWriting fonts load,

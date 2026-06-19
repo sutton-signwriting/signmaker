@@ -1,11 +1,10 @@
 import { create } from 'zustand';
 
-/** The SignWriting fonts font-ttf needs loaded before it can render glyphs. */
-export const SIGNWRITING_FONTS = [
-  'SuttonSignWritingLine',
-  'SuttonSignWritingFill',
-  'SuttonSignWritingOneD',
-] as const;
+// font-ttf renders symbols from the Line (outline) + Fill fonts via canvas — those two gate the UI.
+// SuttonSignWritingOneD (~8MB) is only used by the SWU text field in Settings, so it is left out of
+// the eager load and lazy-fetched by its @font-face the first time that field renders. This keeps
+// ~8MB off the startup critical path on low-end / slow connections.
+export const SIGNWRITING_FONTS = ['SuttonSignWritingLine', 'SuttonSignWritingFill'] as const;
 
 interface FontState {
   /** Whether the SignWriting fonts have loaded. Glyph SVG is empty until then. */
