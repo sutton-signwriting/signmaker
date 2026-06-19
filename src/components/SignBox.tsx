@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
+import { memo, useCallback, useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
 import { useSignStore } from '../store/signStore';
 import { useUiStore } from '../store/uiStore';
 import { useGuideStore } from '../store/guideStore';
@@ -60,8 +60,10 @@ function useMid(boxRef: RefObject<HTMLDivElement | null>, symbols: Sym[]): Mid {
   return mid;
 }
 
-/** A placed symbol — drags itself (or, if part of a multi-selection, the whole group). */
-function DraggableSymbol({ sym, index, mid }: { sym: Sym; index: number; mid: Mid }) {
+/** A placed symbol — drags itself (or, if part of a multi-selection, the whole group).
+ *  Memoized: the store keeps unchanged symbols' references stable, so only symbols that actually
+ *  changed (moved/selected/transformed) re-render on a given interaction. */
+const DraggableSymbol = memo(function DraggableSymbol({ sym, index, mid }: { sym: Sym; index: number; mid: Mid }) {
   // Captured at drag start so snapping measures the moving group and the stationary symbols once.
   const startBox = useRef<Box | null>(null);
   const boxes = useRef<Box[]>([]);
@@ -129,7 +131,7 @@ function DraggableSymbol({ sym, index, mid }: { sym: Sym; index: number; mid: Mi
       dangerouslySetInnerHTML={{ __html: useSymbolSvg(sym.key) }}
     />
   );
-}
+});
 
 function Grid({ level, mid }: { level: string; mid: Mid }) {
   const { clientW, clientH, w, h } = mid;
