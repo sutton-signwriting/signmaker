@@ -11,11 +11,14 @@ import { flashButton } from '../lib/shortcuts';
 
 type Store = ReturnType<typeof useSignStore.getState>;
 type Ui = ReturnType<typeof useUiStore.getState>;
-// A check is [trigger, ...requiredModifiers]. The trigger is a keyCode (number) for physical keys
-// that are layout-independent (Tab, Enter, arrows, …) or a printed character (string) matched against
-// event.key. Character matching is essential for punctuation shortcuts: keyCode reports US physical
-// positions, so on layouts like ABNT2 (Brazilian) the '/', '.', ',' keys sit elsewhere and keyCode
-// matching fired on the wrong keys. event.key is the character the user actually typed, on any layout.
+// A check is [trigger, ...requiredModifiers]. The trigger is either a keyCode (number) or a printed
+// character (string, matched against event.key).
+//   - Letters/digits and physical keys (Tab, Enter, arrows, …) stay as keyCode: browsers map a
+//     letter/digit keyCode to the character the active layout produces, so ⌘Z/⌘A already follow the
+//     layout (the same reason ⌘C works on AZERTY).
+//   - Punctuation keyCodes instead report the US *physical position*, so on layouts like ABNT2
+//     (Brazilian) the '/', '.', ',' keys sit elsewhere and keyCode matching fired on the wrong keys.
+//     These match event.key — the character actually typed — so they work on any layout.
 type Check = [number | string, ...string[]];
 
 const keyboard: Record<string, Check | Check[]> = {
@@ -75,7 +78,9 @@ const keyboard: Record<string, Check | Check[]> = {
   mouthing: [77],
   translate: [84],
 };
-const PREVENT = [8, 9, 191];
+// Suppress the browser default for keys that would otherwise act (Backspace → back nav, Tab → focus).
+// The '/' default (Firefox quick-find) is already prevented by the rotate action, which matches it.
+const PREVENT = [8, 9];
 const ARROWS: Record<number, Direction> = { 37: 'left', 38: 'up', 39: 'right', 40: 'down' };
 // Palette-grid cursor deltas for select mode (row, col).
 const GRID_MOVE: Record<number, [number, number]> = { 37: [0, -1], 38: [-1, 0], 39: [0, 1], 40: [1, 0] };

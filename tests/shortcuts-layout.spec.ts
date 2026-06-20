@@ -13,11 +13,14 @@ test.describe('layout-independent shortcuts', () => {
 
   // Dispatch the character with a keyCode that is NOT the US position (0) — what a foreign-layout key
   // sends. Old keyCode matching would miss it; event.key matching catches it.
-  const pressChar = (page: import('@playwright/test').Page, key: string) =>
-    page.evaluate((k) => window.dispatchEvent(new KeyboardEvent('keydown', { key: k, bubbles: true, cancelable: true })), key);
+  const pressChar = (page: import('@playwright/test').Page, key: string, meta = false) =>
+    page.evaluate(
+      ({ k, m }) => window.dispatchEvent(new KeyboardEvent('keydown', { key: k, metaKey: m, bubbles: true, cancelable: true })),
+      { k: key, m: meta },
+    );
 
-  // rotate ('/','?') wraps and mirror (',') toggles, so they change a fresh symbol directly.
-  for (const key of ['/', '?', ','] as const) {
+  // rotate ('/','?'), mirror (','), fill ('n') change a fresh symbol directly.
+  for (const key of ['/', '?', ',', 'n'] as const) {
     test(`'${key}' transforms the selected symbol regardless of keyCode`, async ({ page }) => {
       const before = await fswlive(page);
       await pressChar(page, key);
@@ -25,13 +28,24 @@ test.describe('layout-independent shortcuts', () => {
     });
   }
 
-  // Variation is bounded, so step forward ('.') before testing the backward step ('>').
-  test(`variation '.' and '>' both fire regardless of keyCode`, async ({ page }) => {
-    const start = await fswlive(page);
-    await pressChar(page, '.');
-    const forward = await fswlive(page);
-    expect(forward).not.toBe(start);
-    await pressChar(page, '>');
-    expect(await fswlive(page)).not.toBe(forward);
+  // Bounded/back steps: step forward first, then assert the backward step also fires.
+  for (const [forward, back] of [['.', '>'], ['n', 'N']] as const) {
+    test(`'${forward}'/'${back}' both fire regardless of keyCode`, async ({ page }) => {
+      const start = await fswlive(page);
+      await pressChar(page, forward);
+      const stepped = await fswlive(page);
+      expect(stepped).not.toBe(start);
+      await pressChar(page, back);
+      expect(await fswlive(page)).not.toBe(stepped);
+    });
+  }
+
+  // Send-back uses ⌘/Ctrl + the shifted bracket char. The freshly-added symbol is selected and last,
+  // so '{' (send to back) moves it to the front — an observable reorder.
+  test(`'{' (⌘) reorders regardless of keyCode`, async ({ page }) => {
+    await vm(page, 'add', { key: 'S10001', x: 520, y: 480 });
+    const before = await fswlive(page);
+    await pressChar(page, '{', true);
+    expect(await fswlive(page)).not.toBe(before);
   });
 });
