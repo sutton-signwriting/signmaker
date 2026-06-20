@@ -11,7 +11,12 @@ import { flashButton } from '../lib/shortcuts';
 
 type Store = ReturnType<typeof useSignStore.getState>;
 type Ui = ReturnType<typeof useUiStore.getState>;
-type Check = [number, ...string[]];
+// A check is [trigger, ...requiredModifiers]. The trigger is a keyCode (number) for physical keys
+// that are layout-independent (Tab, Enter, arrows, …) or a printed character (string) matched against
+// event.key. Character matching is essential for punctuation shortcuts: keyCode reports US physical
+// positions, so on layouts like ABNT2 (Brazilian) the '/', '.', ',' keys sit elsewhere and keyCode
+// matching fired on the wrong keys. event.key is the character the user actually typed, on any layout.
+type Check = [number | string, ...string[]];
 
 const keyboard: Record<string, Check | Check[]> = {
   selectBack: [9, 'shiftKey'],
@@ -28,14 +33,16 @@ const keyboard: Record<string, Check | Check[]> = {
     [90, 'ctrlKey'],
     [90, 'metaKey'],
   ],
-  rotateBack: [191, 'shiftKey'],
-  rotateNext: [191],
-  variationBack: [190, 'shiftKey'],
-  variationNext: [190],
-  paletteMirror: [188, 'shiftKey'],
-  mirror: [188],
-  fillBack: [78, 'shiftKey'],
-  fillNext: [78],
+  // Punctuation shortcuts match the printed character so they work on every keyboard layout.
+  // The shifted character (e.g. '?') already encodes Shift, so no modifier is listed.
+  rotateBack: ['?'],
+  rotateNext: ['/'],
+  variationBack: ['>'],
+  variationNext: ['.'],
+  paletteMirror: ['<'],
+  mirror: [','],
+  fillBack: ['N'],
+  fillNext: ['n'],
   recenter: [
     [36, 'ctrlKey'],
     [36, 'metaKey'],
@@ -49,12 +56,12 @@ const keyboard: Record<string, Check | Check[]> = {
     [68, 'ctrlKey'],
   ],
   bringFront: [
-    [221, 'shiftKey', 'metaKey'],
-    [221, 'shiftKey', 'ctrlKey'],
+    ['}', 'metaKey'],
+    ['}', 'ctrlKey'],
   ],
   sendBack: [
-    [219, 'shiftKey', 'metaKey'],
-    [219, 'shiftKey', 'ctrlKey'],
+    ['{', 'metaKey'],
+    ['{', 'ctrlKey'],
   ],
   selectAll: [
     [65, 'metaKey'],
@@ -143,11 +150,12 @@ function isTyping(target: EventTarget | null): boolean {
 
 function matches(event: KeyboardEvent, name: string): boolean {
   if (isTyping(event.target)) return false;
-  const code = event.keyCode;
   let checks = keyboard[name];
   if (!Array.isArray(checks[0])) checks = [checks as Check];
   for (const check of checks as Check[]) {
-    if (check[0] !== code) continue;
+    const trigger = check[0];
+    const hit = typeof trigger === 'string' ? event.key === trigger : event.keyCode === trigger;
+    if (!hit) continue;
     const mods = check.slice(1) as string[];
     if (mods.every((mod) => (event as unknown as Record<string, boolean>)[mod])) return true;
   }
@@ -198,7 +206,7 @@ export function useKeyboard(): void {
         if (event.keyCode === 13 || event.keyCode === 32) select.press(); // Enter / Space
         else if (event.keyCode === 8) select.back(); // Backspace steps up a level
         else if (event.keyCode === 27 || event.keyCode === 83) select.exit(); // Escape / S toggles off
-        else if (event.keyCode === 188 && event.shiftKey) {
+        else if (event.key === '<') {
           const p = usePaletteStore.getState(); // Shift+, flips the palette, same as outside select mode
           if (p.mirror) p.toggleMirror();
         } else {
