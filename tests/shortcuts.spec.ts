@@ -12,9 +12,10 @@ test.describe('shortcut sheet', () => {
     await page.keyboard.down('Meta');
     // Appears only after the ~1s hold.
     await expect(page.locator('.shortcut-sheet')).toBeVisible({ timeout: 3000 });
-    // Lists many shortcuts, each with a label and its key(s).
+    // Lists many shortcuts, each with a label and its key(s). Undo's modifier glyph is platform-
+    // dependent (⌘ on macOS, Ctrl+ elsewhere — CI runs on Linux), so match either.
     expect(await page.locator('.shortcut-row').count()).toBeGreaterThan(10);
-    await expect(page.locator('.shortcut-row', { hasText: 'Undo' }).locator('kbd')).toHaveText('⌘Z');
+    await expect(page.locator('.shortcut-row', { hasText: 'Undo' }).locator('kbd')).toHaveText(/^(⌘|Ctrl\+)Z$/);
     await expect(page.locator('.shortcut-row', { hasText: 'Rotate +' }).locator('kbd')).toHaveText('/');
 
     await page.keyboard.up('Meta');
