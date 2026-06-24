@@ -71,6 +71,17 @@ const en: Messages = {
   moveDown: 'Move down',
   moveLeft: 'Move left',
   moveRight: 'Move right',
+
+  deselect: 'Deselect',
+  flipPalette: 'Flip palette',
+  sendToBack: 'Send to back',
+  selectAll: 'Select all',
+  moveSelection: 'Move selection',
+  keyboardShortcuts: 'Keyboard shortcuts',
+  edit: 'Edit',
+  reset: 'Reset',
+  resetAll: 'Reset all',
+  pressKeys: 'Press keys…',
 };
 
 export default en;

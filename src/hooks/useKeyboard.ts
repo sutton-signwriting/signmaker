@@ -1,83 +1,11 @@
 import { useEffect } from 'react';
 import { useSignStore } from '../store/signStore';
 import { useUiStore } from '../store/uiStore';
-import { useLangStore } from '../store/langStore';
-import { useToolStore } from '../store/toolStore';
 import { useSelectModeStore } from '../store/selectModeStore';
 import { usePaletteStore } from '../store/paletteStore';
-import { mouthingSupported } from '../i18n/languageNames';
 import { keyDown, keyUp, stopAllMoves, type Direction } from '../lib/arrowRepeat';
-import { flashButton } from '../lib/shortcuts';
+import { SHORTCUTS, effectiveBindings, flashButton, type Check } from '../lib/shortcuts';
 
-type Store = ReturnType<typeof useSignStore.getState>;
-type Ui = ReturnType<typeof useUiStore.getState>;
-// A check is [trigger, ...requiredModifiers]. The trigger is either a keyCode (number) or a printed
-// character (string, matched against event.key).
-//   - Letters/digits and physical keys (Tab, Enter, arrows, …) stay as keyCode: browsers map a
-//     letter/digit keyCode to the character the active layout produces, so ⌘Z/⌘A already follow the
-//     layout (the same reason ⌘C works on AZERTY).
-//   - Punctuation keyCodes instead report the US *physical position*, so on layouts like ABNT2
-//     (Brazilian) the '/', '.', ',' keys sit elsewhere and keyCode matching fired on the wrong keys.
-//     These match event.key — the character actually typed — so they work on any layout.
-type Check = [number | string, ...string[]];
-
-const keyboard: Record<string, Check | Check[]> = {
-  selectBack: [9, 'shiftKey'],
-  selectNext: [9],
-  escape: [27],
-  delete: [[8], [46]],
-  redo: [
-    [90, 'shiftKey', 'ctrlKey'],
-    [90, 'shiftKey', 'metaKey'],
-    [89, 'ctrlKey'],
-    [89, 'metaKey'],
-  ],
-  undo: [
-    [90, 'ctrlKey'],
-    [90, 'metaKey'],
-  ],
-  // Punctuation shortcuts match the printed character so they work on every keyboard layout.
-  // The shifted character (e.g. '?') already encodes Shift, so no modifier is listed.
-  rotateBack: ['?'],
-  rotateNext: ['/'],
-  variationBack: ['>'],
-  variationNext: ['.'],
-  paletteMirror: ['<'],
-  mirror: [','],
-  fillBack: ['N'],
-  fillNext: ['n'],
-  recenter: [
-    [36, 'ctrlKey'],
-    [36, 'metaKey'],
-  ],
-  symmetricDuplicate: [
-    [68, 'shiftKey', 'metaKey'],
-    [68, 'shiftKey', 'ctrlKey'],
-  ],
-  duplicate: [
-    [68, 'metaKey'],
-    [68, 'ctrlKey'],
-  ],
-  bringFront: [
-    ['}', 'metaKey'],
-    ['}', 'ctrlKey'],
-  ],
-  sendBack: [
-    ['{', 'metaKey'],
-    ['{', 'ctrlKey'],
-  ],
-  selectAll: [
-    [65, 'metaKey'],
-    [65, 'ctrlKey'],
-  ],
-  export: [
-    [83, 'metaKey'],
-    [83, 'ctrlKey'],
-  ],
-  fingerspelling: [70],
-  mouthing: [77],
-  translate: [84],
-};
 // Suppress the browser default for keys that would otherwise act (Backspace → back nav, Tab → focus).
 // The '/' default (Firefox quick-find) is already prevented by the rotate action, which matches it.
 const PREVENT = [8, 9];
@@ -92,72 +20,15 @@ function digitRow(code: number): number {
   return -1;
 }
 
-// Order = priority. `tool` is the control button id suffix to flash; null = no button.
-const ACTIONS: { name: string; tool: string | null; run: (s: Store, ui: Ui) => void }[] = [
-  { name: 'selectBack', tool: 'selectPrev', run: (s) => s.select(-1) },
-  { name: 'selectNext', tool: 'selectNext', run: (s) => s.select(1) },
-  { name: 'escape', tool: null, run: (s) => s.selnone() },
-  { name: 'delete', tool: 'delete', run: (s) => s.remove() },
-  { name: 'redo', tool: 'redo', run: (s) => s.redo() },
-  { name: 'undo', tool: 'undo', run: (s) => s.undo() },
-  { name: 'rotateBack', tool: 'rotateCCW', run: (s) => s.rotate(-1) },
-  { name: 'rotateNext', tool: 'rotateCW', run: (s) => s.rotate(1) },
-  { name: 'variationBack', tool: 'variationPrev', run: (s) => s.variation(-1) },
-  { name: 'variationNext', tool: 'variationNext', run: (s) => s.variation(1) },
-  {
-    name: 'paletteMirror',
-    tool: null,
-    run: () => {
-      const p = usePaletteStore.getState();
-      if (p.mirror) p.toggleMirror();
-    },
-  },
-  { name: 'mirror', tool: 'mirror', run: (s) => s.mirror() },
-  { name: 'fillBack', tool: 'fillPrev', run: (s) => s.fill(-1) },
-  { name: 'fillNext', tool: 'fillNext', run: (s) => s.fill(1) },
-  { name: 'recenter', tool: 'center', run: (s) => s.center() },
-  { name: 'symmetricDuplicate', tool: 'symmetric', run: (s) => s.symmetricDuplicate() },
-  { name: 'duplicate', tool: 'copy', run: (s) => s.copy() },
-  { name: 'bringFront', tool: 'over', run: (s) => s.over() },
-  { name: 'sendBack', tool: null, run: (s) => s.under() },
-  { name: 'selectAll', tool: null, run: (s) => s.selectAll() },
-  { name: 'export', tool: 'export', run: (_s, ui) => ui.set({ tab: 'png' }) },
-  {
-    name: 'fingerspelling',
-    tool: null,
-    run: () => {
-      if (useLangStore.getState().signed) useToolStore.getState().setOpen('fingerspelling');
-    },
-  },
-  {
-    name: 'mouthing',
-    tool: null,
-    run: () => {
-      const { spoken } = useLangStore.getState();
-      if (spoken && mouthingSupported(spoken)) useToolStore.getState().setOpen('mouthing');
-    },
-  },
-  {
-    name: 'translate',
-    tool: null,
-    run: () => {
-      const { signed, spoken } = useLangStore.getState();
-      if (signed && spoken) useToolStore.getState().setOpen('translate');
-    },
-  },
-];
-
 function isTyping(target: EventTarget | null): boolean {
   const el = target as HTMLElement | null;
   if (!el || !el.tagName) return false;
   return el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable;
 }
 
-function matches(event: KeyboardEvent, name: string): boolean {
-  if (isTyping(event.target)) return false;
-  let checks = keyboard[name];
-  if (!Array.isArray(checks[0])) checks = [checks as Check];
-  for (const check of checks as Check[]) {
+/** True when the event satisfies any of a shortcut's bindings (trigger char/keyCode + required modifiers). */
+function matches(event: KeyboardEvent, bindings: Check[]): boolean {
+  for (const check of bindings) {
     const trigger = check[0];
     const hit = typeof trigger === 'string' ? event.key === trigger : event.keyCode === trigger;
     if (!hit) continue;
@@ -180,7 +51,7 @@ export function useKeyboard(): void {
     };
 
     // Actions run on keydown — keyup doesn't fire for keys held with ⌘ on macOS, which broke
-    // ⌘-shortcuts like recenter/undo/redo. Arrows repeat (startMove dedupes); others ignore repeats.
+    // ⌘-shortcuts like center/undo/redo. Arrows repeat (the OS drives the cadence); others ignore repeats.
     const onKeyDown = (event: KeyboardEvent) => {
       if (isTyping(event.target)) return;
       // A modal dialog owns its keys — let Escape close it natively, and don't run shortcuts behind it.
@@ -236,10 +107,10 @@ export function useKeyboard(): void {
         event.preventDefault();
         return;
       }
-      for (const action of ACTIONS) {
-        if (!matches(event, action.name)) continue;
-        action.run(useSignStore.getState(), useUiStore.getState());
-        if (action.tool) flashButton(`tool-${action.tool}`);
+      for (const sc of SHORTCUTS) {
+        if (!sc.run || !matches(event, effectiveBindings(sc.id))) continue;
+        sc.run(useSignStore.getState(), useUiStore.getState());
+        if (sc.tool) flashButton(`tool-${sc.tool}`);
         event.preventDefault();
         return;
       }

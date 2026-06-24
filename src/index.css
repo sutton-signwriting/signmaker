@@ -38,24 +38,150 @@ svg {
   pointer-events: none;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
-/* Shortcut-learning overlay: badges pinned over every tool while ⌘/Ctrl is held. */
+/* Shortcut sheet: a temporary, read-only list of every shortcut shown while ⌘/Ctrl is held. */
 .shortcut-overlay {
   position: fixed;
   inset: 0;
   z-index: 9998;
   pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.35);
 }
-.shortcut-badge {
-  position: fixed;
-  transform: translate(-50%, -50%);
-  padding: 2px 6px;
-  border-radius: 5px;
-  background: #2563eb;
-  color: #fff;
-  font-size: 0.72rem;
+.shortcut-sheet {
+  max-height: 80vh;
+  overflow-y: auto;
+  max-width: min(640px, 92vw);
+  padding: 1rem 1.25rem;
+  border-radius: 12px;
+  background: #fff;
+  color: #1e293b;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+  pointer-events: auto; /* clickable (e.g. the Edit button) even though the backdrop isn't */
+}
+.shortcut-sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+.shortcut-sheet h2 {
+  margin: 0;
+  font-size: 1rem;
   font-weight: 600;
+}
+.shortcut-edit {
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  padding: 0.2rem 0.75rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.shortcut-edit:hover {
+  background: #f1f5f9;
+}
+
+/* Keyboard-shortcuts editor */
+.shortcuts-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.shortcuts-reset-all {
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.shortcuts-list {
+  max-height: 70vh;
+  overflow-y: auto;
+  padding: 0.25rem 0.25rem 0;
+}
+.shortcut-edit-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.3rem 0;
+}
+.shortcut-edit-label {
+  font-size: 0.9rem;
+}
+.shortcut-key-btn {
+  min-width: 4rem;
+  padding: 3px 10px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  font: 600 0.78rem ui-monospace, monospace;
+  cursor: pointer;
+}
+.shortcut-key-btn:hover:not(:disabled) {
+  border-color: #94a3b8;
+}
+.shortcut-key-btn.recording {
+  border-color: #2563eb;
+  color: #2563eb;
+  background: #eff6ff;
+}
+.shortcut-key-btn:disabled {
+  color: #94a3b8;
+  cursor: default;
+}
+.shortcut-reset {
+  border: none;
+  background: none;
+  font-size: 1rem;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0 0.25rem;
+}
+.shortcut-reset:hover:not(:disabled) {
+  color: #1e293b;
+}
+.shortcut-reset:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.shortcut-sheet dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.25rem 1.5rem;
+}
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.2rem 0;
+}
+.shortcut-row dt {
+  font-size: 0.85rem;
+}
+.shortcut-row dd {
+  margin: 0;
+}
+.shortcut-row kbd {
+  display: inline-block;
+  min-width: 1.4em;
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: #1e293b;
+  color: #fff;
+  font: 600 0.72rem ui-monospace, monospace;
+  text-align: center;
   white-space: nowrap;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+@media (max-width: 520px) {
+  .shortcut-sheet dl {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ASL tooltips/labels are SignWriting signs (black on transparent) — show on white. */
@@ -944,7 +1070,8 @@ html,body {
 
 /* Export dialog */
 .export-dialog,
-.settings-dialog {
+.settings-dialog,
+.shortcuts-dialog {
   position: relative; /* containing block for the copied-to-clipboard toast */
   margin: auto; /* restore the modal centering Tailwind's preflight margin reset removes */
   border: none;
@@ -955,8 +1082,11 @@ html,body {
 }
 .settings-dialog { width: min(440px, 92vw); max-height: 85vh; overflow: auto; }
 .settings-dialog .more-grid { padding: 1.25rem; }
+.shortcuts-dialog { width: min(460px, 92vw); max-height: 85vh; overflow: auto; }
+.shortcuts-dialog .shortcuts-list { padding: 0.75rem 1.25rem 1.25rem; }
 .export-dialog::backdrop,
-.settings-dialog::backdrop { background: rgba(15, 23, 42, 0.4); }
+.settings-dialog::backdrop,
+.shortcuts-dialog::backdrop { background: rgba(15, 23, 42, 0.4); }
 .export-header {
   display: flex;
   align-items: center;

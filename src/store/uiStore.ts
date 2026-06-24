@@ -15,6 +15,8 @@ export interface UiState {
   paletteOpen: boolean;
   /** Transient: hold ⌘/Ctrl alone to reveal every tool's keyboard shortcut. Never persisted to the URL. */
   learnShortcuts: boolean;
+  /** Transient: whether the keyboard-shortcuts editor dialog is open. */
+  shortcutsOpen: boolean;
 
   size: string;
   pad: string;
@@ -38,6 +40,7 @@ export const useUiStore = create<UiState>((set) => ({
   tab: '',
   paletteOpen: false,
   learnShortcuts: false,
+  shortcutsOpen: false,
 
   size: '1',
   pad: '0',

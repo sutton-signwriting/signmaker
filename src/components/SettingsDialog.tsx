@@ -93,6 +93,16 @@ export function SettingsDialog({ dialogRef }: { dialogRef: RefObject<HTMLDialogE
           <span>Styling</span>
           <input value={ui.styling} onInput={(e) => ui.set({ styling: (e.target as HTMLInputElement).value })} />
         </label>
+        <button
+          type="button"
+          className={PILL}
+          onClick={() => {
+            dialogRef.current?.close();
+            ui.set({ shortcutsOpen: true });
+          }}
+        >
+          <Sign text={t('keyboardShortcuts')} />
+        </button>
         {'share' in navigator ? (
           <button type="button" className={PILL} onClick={share}>
             <Sign text={t('share')} />

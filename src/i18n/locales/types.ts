@@ -73,4 +73,15 @@ export interface Messages {
   moveDown: string;
   moveLeft: string;
   moveRight: string;
+
+  deselect: string;
+  flipPalette: string;
+  sendToBack: string;
+  selectAll: string;
+  moveSelection: string;
+  keyboardShortcuts: string;
+  edit: string;
+  reset: string;
+  resetAll: string;
+  pressKeys: string;
 }
