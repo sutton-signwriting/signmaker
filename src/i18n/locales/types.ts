@@ -80,4 +80,8 @@ export interface Messages {
   selectAll: string;
   moveSelection: string;
   keyboardShortcuts: string;
+  edit: string;
+  reset: string;
+  resetAll: string;
+  pressKeys: string;
 }

@@ -78,6 +78,10 @@ const en: Messages = {
   selectAll: 'Select all',
   moveSelection: 'Move selection',
   keyboardShortcuts: 'Keyboard shortcuts',
+  edit: 'Edit',
+  reset: 'Reset',
+  resetAll: 'Reset all',
+  pressKeys: 'Press keys…',
 };
 
 export default en;

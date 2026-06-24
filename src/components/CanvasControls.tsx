@@ -8,6 +8,7 @@ import { tip } from '../lib/shortcuts';
 import { useLightDismiss } from '../hooks/useLightDismiss';
 import { SettingsDialog } from './SettingsDialog';
 import { ExportDialog } from './ExportDialog';
+import { ShortcutsDialog } from './ShortcutsDialog';
 import {
   UndoIcon,
   RedoIcon,
@@ -127,7 +128,9 @@ export function CanvasControls() {
   const confirmRef = useRef<HTMLDialogElement>(null);
   const settingsRef = useRef<HTMLDialogElement>(null);
   const exportRef = useRef<HTMLDialogElement>(null);
+  const shortcutsRef = useRef<HTMLDialogElement>(null);
   const tab = useUiStore((ui) => ui.tab);
+  const shortcutsOpen = useUiStore((ui) => ui.shortcutsOpen);
   const selectActive = useSelectModeStore((sm) => sm.active);
   // The arrow pad moves the selection — inert in select mode, or with nothing selected.
   const arrowsDisabled = selectActive || !s.list.some((sym) => sym.selected);
@@ -137,6 +140,10 @@ export function CanvasControls() {
     if (tab === 'more' && !settingsRef.current?.open) settingsRef.current?.showModal();
     if ((tab === 'png' || tab === 'svg') && !exportRef.current?.open) exportRef.current?.showModal();
   }, [tab]);
+
+  useEffect(() => {
+    if (shortcutsOpen && !shortcutsRef.current?.open) shortcutsRef.current?.showModal();
+  }, [shortcutsOpen]);
 
   return (
     <>
@@ -255,6 +262,7 @@ export function CanvasControls() {
 
       <SettingsDialog dialogRef={settingsRef} />
       <ExportDialog dialogRef={exportRef} />
+      <ShortcutsDialog dialogRef={shortcutsRef} />
     </>
   );
 }

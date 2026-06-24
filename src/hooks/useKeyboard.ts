@@ -4,7 +4,7 @@ import { useUiStore } from '../store/uiStore';
 import { useSelectModeStore } from '../store/selectModeStore';
 import { usePaletteStore } from '../store/paletteStore';
 import { keyDown, keyUp, stopAllMoves, type Direction } from '../lib/arrowRepeat';
-import { SHORTCUTS, flashButton, type Check } from '../lib/shortcuts';
+import { SHORTCUTS, effectiveBindings, flashButton, type Check } from '../lib/shortcuts';
 
 // Suppress the browser default for keys that would otherwise act (Backspace → back nav, Tab → focus).
 // The '/' default (Firefox quick-find) is already prevented by the rotate action, which matches it.
@@ -108,7 +108,7 @@ export function useKeyboard(): void {
         return;
       }
       for (const sc of SHORTCUTS) {
-        if (!sc.run || !matches(event, sc.bindings)) continue;
+        if (!sc.run || !matches(event, effectiveBindings(sc.id))) continue;
         sc.run(useSignStore.getState(), useUiStore.getState());
         if (sc.tool) flashButton(`tool-${sc.tool}`);
         event.preventDefault();

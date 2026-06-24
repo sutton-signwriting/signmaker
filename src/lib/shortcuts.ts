@@ -4,6 +4,7 @@ import { useUiStore } from '../store/uiStore';
 import { useLangStore } from '../store/langStore';
 import { useToolStore } from '../store/toolStore';
 import { usePaletteStore } from '../store/paletteStore';
+import { useShortcutStore } from '../store/shortcutStore';
 import { mouthingSupported } from '../i18n/languageNames';
 
 type SignState = ReturnType<typeof useSignStore.getState>;
@@ -142,11 +143,22 @@ function formatBinding(binding: Check): string {
   return out + keyLabel(trigger);
 }
 
-/** The display string for a shortcut: an explicit `keys`, or the platform-preferred binding formatted. */
-export function shortcutKeys(sc: Shortcut): string {
+/** A shortcut's active bindings: the user's override if set, otherwise the registry default. */
+export function effectiveBindings(id: string): Check[] {
+  return useShortcutStore.getState().overrides[id] ?? byId.get(id)?.bindings ?? [];
+}
+
+/** Whether the registry knows this shortcut and the user can remap it (it drives an action). */
+export const isCustomizable = (id: string): boolean => !!byId.get(id)?.run;
+
+/** The display string for a shortcut: an explicit `keys`, or the platform-preferred active binding. */
+export function shortcutKeys(id: string): string {
+  const sc = byId.get(id);
+  if (!sc) return '';
   if (sc.keys !== undefined) return sc.keys;
-  if (!sc.bindings.length) return '';
-  const preferred = sc.bindings.find((b) => b.includes(isMac ? 'metaKey' : 'ctrlKey')) ?? sc.bindings[0];
+  const bindings = effectiveBindings(id);
+  if (!bindings.length) return '';
+  const preferred = bindings.find((b) => b.includes(isMac ? 'metaKey' : 'ctrlKey')) ?? bindings[0];
   return formatBinding(preferred);
 }
 
@@ -154,8 +166,21 @@ export function shortcutKeys(sc: Shortcut): string {
 export function tip(t: Translator['t'], id: string): string {
   const sc = byId.get(id);
   if (!sc) return id;
-  const keys = shortcutKeys(sc);
+  const keys = shortcutKeys(id);
   return keys ? `${t(sc.label)} (${keys})` : t(sc.label);
+}
+
+/** Convert a recorded keydown into a binding. Returns null for a lone modifier (keep listening).
+ *  Printable keys store the character (layout-independent); named keys store their keyCode. */
+export function eventToBinding(event: KeyboardEvent): Check | null {
+  if (['Meta', 'Control', 'Shift', 'Alt'].includes(event.key)) return null;
+  const printable = event.key.length === 1;
+  const mods: string[] = [];
+  if (event.metaKey) mods.push('metaKey');
+  if (event.ctrlKey) mods.push('ctrlKey');
+  if (event.shiftKey && !printable) mods.push('shiftKey'); // a printable char already encodes Shift
+  if (event.altKey) mods.push('altKey');
+  return [printable ? event.key : event.keyCode, ...mods];
 }
 
 /** Briefly highlight a control button as if pressed (keyboard-triggered feedback). */
