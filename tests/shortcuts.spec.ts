@@ -1,26 +1,24 @@
 import { test, expect } from '@playwright/test';
 import { waitForApp } from './support';
 
-test.describe('shortcut-learning overlay', () => {
+test.describe('shortcut sheet', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/index.html');
     await waitForApp(page);
   });
 
-  test('holding Cmd reveals shortcut-only badges, released on key up', async ({ page }) => {
-    const undoTip = (await page.locator('#tool-undo').getAttribute('data-tip'))!; // e.g. "Undo (⌘Z)"
-    const shortcut = undoTip.match(/\(([^)]+)\)/)![1];
-
-    await expect(page.locator('.shortcut-badge')).toHaveCount(0);
+  test('holding Cmd reveals the shortcut list, released on key up', async ({ page }) => {
+    await expect(page.locator('.shortcut-sheet')).toHaveCount(0);
     await page.keyboard.down('Meta');
-    // Appears only after the ~2s hold.
-    await expect(page.locator('.shortcut-badge').filter({ hasText: shortcut })).toBeVisible({ timeout: 3000 });
-    expect(await page.locator('.shortcut-badge').count()).toBeGreaterThan(3);
-    // Shows the shortcut, not the label word.
-    await expect(page.locator('.shortcut-badge').filter({ hasText: 'Undo' })).toHaveCount(0);
+    // Appears only after the ~1s hold.
+    await expect(page.locator('.shortcut-sheet')).toBeVisible({ timeout: 3000 });
+    // Lists many shortcuts, each with a label and its key(s).
+    expect(await page.locator('.shortcut-row').count()).toBeGreaterThan(10);
+    await expect(page.locator('.shortcut-row', { hasText: 'Undo' }).locator('kbd')).toHaveText('⌘Z');
+    await expect(page.locator('.shortcut-row', { hasText: 'Rotate +' }).locator('kbd')).toHaveText('/');
 
     await page.keyboard.up('Meta');
-    await expect(page.locator('.shortcut-badge')).toHaveCount(0);
+    await expect(page.locator('.shortcut-sheet')).toHaveCount(0);
   });
 
   test('pressing another key cancels the reveal before it shows', async ({ page }) => {
@@ -28,6 +26,6 @@ test.describe('shortcut-learning overlay', () => {
     await page.keyboard.press('z'); // Cmd+Z — uses a shortcut instead of revealing them
     await page.keyboard.up('Meta');
     await page.waitForTimeout(2200);
-    await expect(page.locator('.shortcut-badge')).toHaveCount(0);
+    await expect(page.locator('.shortcut-sheet')).toHaveCount(0);
   });
 });

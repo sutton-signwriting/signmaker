@@ -4,7 +4,7 @@ import { useUiStore } from '../store/uiStore';
 import { useSelectModeStore } from '../store/selectModeStore';
 import { useTranslation } from '../hooks/useTranslation';
 import { startMove, stopMove, type Direction } from '../lib/arrowRepeat';
-import { tip, HINTS } from '../lib/shortcuts';
+import { tip } from '../lib/shortcuts';
 import { useLightDismiss } from '../hooks/useLightDismiss';
 import { SettingsDialog } from './SettingsDialog';
 import { ExportDialog } from './ExportDialog';
@@ -155,13 +155,13 @@ export function CanvasControls() {
           <SelectNextIcon />
         </IconButton>
         <span className="canvas-divider" />
-        <IconButton id="tool-copy" label={`${t('duplicate')} (${HINTS.copy})`} onClick={s.copy}>
+        <IconButton id="tool-copy" label={tip(t, 'copy')} onClick={s.copy}>
           <DuplicateIcon />
         </IconButton>
         <IconButton id="tool-symmetric" label={tip(t, 'symmetricDuplicate')} onClick={s.symmetricDuplicate}>
           <SymmetryIcon />
         </IconButton>
-        <IconButton id="tool-over" label={`${t('bringToFront')} (${HINTS.over})`} onClick={s.over}>
+        <IconButton id="tool-over" label={tip(t, 'over')} onClick={s.over}>
           <BringToFrontIcon />
         </IconButton>
         <IconButton id="tool-center" label={tip(t, 'center')} onClick={s.center}>
