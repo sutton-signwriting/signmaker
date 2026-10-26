@@ -50,6 +50,44 @@ test.describe('symbol operations', () => {
     expect(await fswlive(page)).not.toBe(before);
   });
 
+  test('variation enters heel handshapes from every fill and rotation', async ({ page }) => {
+    const failures = await page.evaluate(() => {
+      const vm = (window as any).signmaker.vm;
+      const failures: string[] = [];
+      for (const [base, heel] of [['1f5', '1f6'], ['203', '204']]) {
+        for (let fill = 0; fill < 6; fill++) {
+          for (let rotation = 0; rotation < 16; rotation++) {
+            const rot = rotation.toString(16);
+            const key = `S${base}${fill}${rot}`;
+            vm.clear();
+            vm.add({ key, x: 500, y: 500 });
+            vm.variation(1);
+            if (!vm.fswlive().includes(`S${heel}1${rot}`)) failures.push(key);
+          }
+        }
+      }
+      return failures;
+    });
+    expect(failures).toEqual([]);
+  });
+
+  test('thumb variation buttons cross the heel and support undo', async ({ page }) => {
+    await vm(page, 'add', { key: 'S1f500', x: 500, y: 500 });
+    await page.locator('#tool-pinEdit').click();
+    await page.locator('#tool-variationNext').click();
+    expect(await fswlive(page)).toContain('S1f610');
+    await vm(page, 'undo');
+    expect(await fswlive(page)).toContain('S1f500');
+    await vm(page, 'redo');
+    await vm(page, 'select', 0);
+    await page.locator('#tool-variationNext').click();
+    expect(await fswlive(page)).toContain('S1f710');
+    await page.locator('#tool-variationPrev').click();
+    expect(await fswlive(page)).toContain('S1f610');
+    await page.locator('#tool-variationPrev').click();
+    expect(await fswlive(page)).toContain('S1f510');
+  });
+
   // The signbox is 1:1, so one symbol unit is one screen pixel.
   test('a single arrow key press moves exactly one step (not two)', async ({ page }) => {
     await vm(page, 'add', { key: 'S10000', x: 500, y: 500 });
