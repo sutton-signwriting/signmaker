@@ -64,7 +64,19 @@ const safe = (fn: () => string, key: string): string => {
   }
 };
 
-export const scroll = (key: string, step: number): string => safe(() => fontFsw.symbolScroll(key, step > 0), key);
+/** Change base while preserving rotation, choosing an available fill for restricted handshapes. */
+export function scroll(key: string, step: number): string {
+  const next = safe(() => fontFsw.symbolScroll(key, step > 0), key);
+  if (next !== key || !/^S[1-3][0-9a-f]{2}[0-5][0-9a-f]$/.test(key) || !symbolSize(key)[0]) return next;
+  const base = parseInt(key.slice(1, 4), 16) + (step > 0 ? 1 : -1);
+  if (base < 0x100 || base > 0x38b) return key;
+  // Thumb Heel and Fist Heel only have fill 1; keeping another fill stalls symbolScroll.
+  for (let fill = 0; fill < 6; fill++) {
+    const candidate = `S${base.toString(16)}${fill}${key[5]}`;
+    if (symbolSize(candidate)[0]) return candidate;
+  }
+  return key;
+}
 export const rotate = (key: string, step: number): string => safe(() => fontFsw.symbolRotate(key, step > 0), key);
 export const mirror = (key: string): string => safe(() => fontFsw.symbolMirror(key), key);
 
